@@ -3,7 +3,7 @@
     <output-path>$PROJECT_DIR$/out/artifacts/null_jar</output-path>
     <root id="archive" name="null.jar">
       <element id="directory" name="META-INF">
-        <element id="file-copy" path="$PROJECT_DIR$/src/main/java/eBot/META-INF/MANIFEST.MF" />
+        <element id="file-copy" path="$PROJECT_DIR$/src/main/java/MikoBot/META-INF/MANIFEST.MF" />
       </element>
       <element id="module-output" name="null" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/com/sedmelluq/lavaplayer-natives/1.3.13/lavaplayer-natives-1.3.13.jar" path-in-jar="/" />

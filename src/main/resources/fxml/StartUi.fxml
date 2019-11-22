@@ -3,7 +3,7 @@
 <?import com.jfoenix.controls.*?>
 <?import javafx.scene.layout.*?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="eBot.GUI.StartUi">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/10.0.2-internal" xmlns:fx="http://javafx.com/fxml/1" fx:controller="MikoBot.GUI.StartUi">
    <children>
       <JFXTextArea fx:id="token" editable="false" layoutX="3.0" layoutY="355.0" prefHeight="32.0" prefWidth="600.0" text="hello" AnchorPane.leftAnchor="8.0" AnchorPane.rightAnchor="8.0" />
    </children>
