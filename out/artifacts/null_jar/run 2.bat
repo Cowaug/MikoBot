@@ -1,0 +1,2 @@
+java -jar null.jar NjQzNzY2MTYxNDQzNTIwNTIz.XcqXdw.43d9zI0usa8zFR_SfJvnGuFq9Xg music
+PAUSE
