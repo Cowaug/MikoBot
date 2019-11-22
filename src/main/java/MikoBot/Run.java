@@ -1,6 +1,7 @@
 package MikoBot;
 
 import MikoBot.GUI.Console;
+import MikoBot.MediaPlayer.AudioPlayerSendHandler;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -24,6 +25,8 @@ public class Run {
 
 
     public static Console console;
+
+    public static String[] arg;
 
     static {
         try {
@@ -57,6 +60,7 @@ public class Run {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
+        arg=args;
         //        launch(args);
         if (args.length == 0) return;
         if (args.length == 2 && args[1].equals("music")) MODE = MUSIC;
@@ -77,7 +81,29 @@ public class Run {
     }
 
     public static void shutdown(){
-        jda.shutdown();
+        jda.shutdownNow();
+        try {
+            jda = new JDABuilder(AccountType.BOT).setToken(arg[0])
+                    .setBulkDeleteSplittingEnabled(false)
+                    .setCompression(Compression.NONE)
+                    .setActivity(Activity.playing(MODE.equals(MUSIC) ? "Music" : "TTS"))
+                    .build();
+            jda.addEventListener(new MessageListener());
+
+            if (arg.length == 2 && arg[1].equals("music")) MODE = MUSIC;
+        } catch (LoginException e) {
+            e.printStackTrace();
+        } finally {
+            console = new Console(MODE);
+        }
+//        if(jda.getStatus()!=JDA.Status.SHUTTING_DOWN)
+//        {
+//            jda.getGuilds().stream().forEach(g ->
+//            {
+//                g.getAudioManager().closeAudioConnection();
+//            });
+//            jda.shutdown();
+//        }
     }
 
 }

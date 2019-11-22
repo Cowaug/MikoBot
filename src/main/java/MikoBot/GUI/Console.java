@@ -1,6 +1,7 @@
 package MikoBot.GUI;
 
 import MikoBot.MediaManager;
+import MikoBot.Run;
 
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
@@ -26,8 +27,8 @@ public class Console extends JFrame{
         WindowAdapter adapter = new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                MediaManager.disconnectAll();
-                System.exit(0);
+                Run.shutdown();
+                //System.exit(0);
             }
         };
         frame.addWindowListener(adapter);
