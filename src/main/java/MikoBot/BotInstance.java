@@ -13,6 +13,7 @@ public class BotInstance {
     private JDA jda;
     private String token;
     private String mode;
+    private MessageListener messageListener;
 
     public BotInstance(String token, String mode) {
         this.token = token;
@@ -27,7 +28,8 @@ public class BotInstance {
                     .setCompression(Compression.NONE)
                     .setActivity(Activity.playing(mode.equals(MUSIC) ? "Music" : "TTS"))
                     .build();
-            jda.addEventListener(new MessageListener());
+            jda.addEventListener(messageListener = new MessageListener());
+
         } catch (LoginException e) {
             e.printStackTrace();
         }
