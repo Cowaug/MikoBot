@@ -17,8 +17,8 @@ public class Console extends JFrame{
      * Create the GUI
      * and add a safety closing mechanism
      */
-    public Console (String title) {
-        frame = new JFrame(title);
+    public Console () {
+        frame = new JFrame("eBotTeam Bot");
         frame.setContentPane(this.panel);
         frame.pack();
         frame.setVisible(true);
@@ -27,8 +27,7 @@ public class Console extends JFrame{
         WindowAdapter adapter = new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
-                Run.shutdown();
-                //System.exit(0);
+                System.exit(0);
             }
         };
         frame.addWindowListener(adapter);

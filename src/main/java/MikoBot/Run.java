@@ -14,13 +14,12 @@ import java.net.URLDecoder;
 
 public class Run {
     public static String PATH;
-    public static final String MUSIC = "Music";
+
     public static final String TTS = "TTS";
 
     public static final String TTS_PREFIX = ".";
     public static final String MEDIA_PREFIX = "/";
 
-    public static String MODE = TTS;
     public static JDA jda;
 
 
@@ -60,52 +59,8 @@ public class Run {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
-        arg=args;
-        //        launch(args);
-        if (args.length == 0) return;
-        if (args.length == 2 && args[1].equals("music")) MODE = MUSIC;
-        try {
-            jda = new JDABuilder(AccountType.BOT).setToken(args[0])
-                    .setBulkDeleteSplittingEnabled(false)
-                    .setCompression(Compression.NONE)
-                    .setActivity(Activity.playing(MODE.equals(MUSIC) ? "Music" : "TTS"))
-                    .build();
-            jda.addEventListener(new MessageListener());
-
-            if (args.length == 2 && args[1].equals("music")) MODE = MUSIC;
-        } catch (LoginException e) {
-            e.printStackTrace();
-        } finally {
-            console = new Console(MODE);
-        }
+        Console console = new Console();
     }
-
-    public static void shutdown(){
-        jda.shutdownNow();
-        try {
-            jda = new JDABuilder(AccountType.BOT).setToken(arg[0])
-                    .setBulkDeleteSplittingEnabled(false)
-                    .setCompression(Compression.NONE)
-                    .setActivity(Activity.playing(MODE.equals(MUSIC) ? "Music" : "TTS"))
-                    .build();
-            jda.addEventListener(new MessageListener());
-
-            if (arg.length == 2 && arg[1].equals("music")) MODE = MUSIC;
-        } catch (LoginException e) {
-            e.printStackTrace();
-        } finally {
-            console = new Console(MODE);
-        }
-//        if(jda.getStatus()!=JDA.Status.SHUTTING_DOWN)
-//        {
-//            jda.getGuilds().stream().forEach(g ->
-//            {
-//                g.getAudioManager().closeAudioConnection();
-//            });
-//            jda.shutdown();
-//        }
-    }
-
 }
 
 

@@ -14,6 +14,7 @@ import static MikoBot.Run.*;
 public class MessageListener extends ListenerAdapter {
     private static TextToSpeech textToSpeech = new TextToSpeech();
     private static MediaPlayback mediaPlayback = new MediaPlayback();
+    private String MODE="tts";
 
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
@@ -33,7 +34,7 @@ public class MessageListener extends ListenerAdapter {
                 case TTS:
                     textToSpeech.start(event, TextToSpeech.GOOGLE_TRANSLATE);
                     break;
-                case MUSIC:
+                case "music":
                     if (message.startsWith(MEDIA_PREFIX))
                         mediaPlayback.start(event);
                     break;
