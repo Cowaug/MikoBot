@@ -58,7 +58,7 @@ public class Run extends Application {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
-        Console console = new Console();
-        //launch(args);
+        //Console console = new Console();
+        launch(args);
     }
 }
