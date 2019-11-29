@@ -29,6 +29,7 @@
     </repositories>
 
     <dependencies>
+        <!--
         <dependency>
             <groupId>org.openjfx</groupId>
             <artifactId>javafx-controls</artifactId>
@@ -40,6 +41,7 @@
             <artifactId>javafx-fxml</artifactId>
             <version>11</version>
         </dependency>
+        -->
 
         <dependency>
             <groupId>com.jfoenix</groupId>
