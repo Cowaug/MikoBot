@@ -3,7 +3,7 @@ package MikoBot.Feature;
 import com.vdurmont.emoji.EmojiParser;
 import MikoBot.Feature.Ultils.Slang;
 import MikoBot.MediaManager;
-import MikoBot.MediaPlayer.MediaPlayer;
+import MikoBot.MediaPlayer.MediaInstance;
 import MikoBot.Run;
 import net.dv8tion.jda.api.entities.*;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -113,10 +113,10 @@ public class TextToSpeech {
      * Speak the text using the server's player
      * created previously
      *
-     * @param mediaPlayer Server's player
+     * @param mediaInstance Server's player
      * @param text        Text user wants to speak
      */
-    private void GoogleTranslate(MediaPlayer mediaPlayer, String text) {
+    private void GoogleTranslate(MediaInstance mediaInstance, String text) {
         text = Slang.makeFormal(text);
         String language = VN;
         if (text.startsWith(EN + " ")) {
@@ -132,7 +132,7 @@ public class TextToSpeech {
 
         String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=" + language + "&q=";
         try {
-            mediaPlayer.play(url + URLEncoder.encode(text, "UTF-8"), null);
+            mediaInstance.play(url + URLEncoder.encode(text, "UTF-8"), null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -165,7 +165,7 @@ public class TextToSpeech {
         FileWriter writer = null;
         BufferedWriter bufferedWriter = null;
         try {
-            writer = new FileWriter(Run.PATH + "/" + filename);
+            writer = new FileWriter(Run.PROGRAM_PATH + "/" + filename);
             bufferedWriter = new BufferedWriter(writer);
             for (String s : arrayList) {
                 bufferedWriter.write(s + "\n");
@@ -195,7 +195,7 @@ public class TextToSpeech {
         FileReader reader = null;
         BufferedReader bufferedReader = null;
         try {
-            reader = new FileReader(Run.PATH + "/" + filename);
+            reader = new FileReader(Run.PROGRAM_PATH + "/" + filename);
             bufferedReader = new BufferedReader(reader);
             String line;
             while ((line = bufferedReader.readLine()) != null) {

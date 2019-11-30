@@ -3,7 +3,7 @@ package MikoBot.Feature;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.vdurmont.emoji.EmojiParser;
 import MikoBot.MediaManager;
-import MikoBot.MediaPlayer.MediaPlayer;
+import MikoBot.MediaPlayer.MediaInstance;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -36,18 +36,18 @@ public class MediaPlayback {
 
             VoiceChannel voiceChannel = Objects.requireNonNull(member.getVoiceState()).getChannel();
             if (voiceChannel != null) {
-                MediaPlayer mediaPlayer = MediaManager.connectTo(event.getGuild(), voiceChannel);
+                MediaInstance mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
                 switch (cmd) {
                     case "play":
                         if (!content.equals("")) {
                             try {
                                 int customIdx = Integer.parseInt(content);
-                                mediaPlayer.getController().jumpTo(customIdx);
+                                mediaInstance.getController().jumpTo(customIdx);
                                 break;
                             } catch (Exception ignored){
                                 System.out.println("Not index");
                             }
-                            mediaPlayer.play(content, textChannel);
+                            mediaInstance.play(content, textChannel);
                             break;
                         } else {
                             textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
@@ -57,7 +57,7 @@ public class MediaPlayback {
                         try {
                             int i;
                             if (!content.equals("") && (i = Integer.parseInt(content)) >= 0) {
-                                mediaPlayer.getController().remove(i);
+                                mediaInstance.getController().remove(i);
                                 break;
                             } else {
                                 textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
@@ -72,7 +72,7 @@ public class MediaPlayback {
                         try {
                             int vol;
                             if (!content.equals("") && (vol = Integer.parseInt(content)) > 0) {
-                                mediaPlayer.getController().setVolume(vol);
+                                mediaInstance.getController().setVolume(vol);
                                 break;
                             } else {
                                 textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
@@ -84,25 +84,25 @@ public class MediaPlayback {
                             return;
                         }
                     case "stop":
-                        mediaPlayer.getController().stop();
+                        mediaInstance.getController().stop();
                         break;
                     case "next":
-                        mediaPlayer.getController().nextTrack();
+                        mediaInstance.getController().nextTrack();
                         break;
                     case "loopOne":
-                        mediaPlayer.getController().setLoopOne();
+                        mediaInstance.getController().setLoopOne();
                         break;
                     case "loopAll":
-                        mediaPlayer.getController().setLoopAll();
+                        mediaInstance.getController().setLoopAll();
                         break;
                     case "loopOff":
-                        mediaPlayer.getController().setLoopOff();
+                        mediaInstance.getController().setLoopOff();
                         break;
                     case "clear":
-                        mediaPlayer.getController().clear();
+                        mediaInstance.getController().clear();
                         break;
                     case "queue":
-                        List<AudioTrack> queue = mediaPlayer.getController().getQueue();
+                        List<AudioTrack> queue = mediaInstance.getController().getQueue();
                         for (int i = 0; i < queue.size(); i++) {
                             AudioTrack audioTrack = queue.get(i);
                             textChannel.sendMessage(i + ". " + audioTrack.getInfo().title).queue();
@@ -112,7 +112,7 @@ public class MediaPlayback {
                         textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
                         return;
                 }
-                mediaPlayer.getController().setTextChannel(textChannel);
+                mediaInstance.getController().setTextChannel(textChannel);
                 textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":ok_hand:")).queue();
             } else {
                 textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();

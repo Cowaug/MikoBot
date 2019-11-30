@@ -4,7 +4,7 @@ import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 
-import static MikoBot.Run.PATH;
+import static MikoBot.Run.PROGRAM_PATH;
 
 public class Slang {
     private static final String SPLITTER = " <>\\<> ";
@@ -62,7 +62,7 @@ public class Slang {
         OutputStreamWriter writer = null;
         BufferedWriter bufferedWriter = null;
         try {
-            writer = new OutputStreamWriter(new FileOutputStream(PATH + "/slang.txt"), StandardCharsets.UTF_8);
+            writer = new OutputStreamWriter(new FileOutputStream(PROGRAM_PATH + "/slang-spoiler.txt"), StandardCharsets.UTF_8);
             bufferedWriter = new BufferedWriter(writer);
             for (WordPair w : words) {
                 bufferedWriter.write(w.getSlang() + SPLITTER + w.getFormal() + "\n");
@@ -87,7 +87,7 @@ public class Slang {
         InputStreamReader reader = null;
         BufferedReader bufferedReader = null;
         try {
-            reader = new InputStreamReader(new FileInputStream(PATH + "/slang.txt"), StandardCharsets.UTF_8);
+            reader = new InputStreamReader(new FileInputStream(PROGRAM_PATH + "/slang-spoiler.txt"), StandardCharsets.UTF_8);
 
             bufferedReader = new BufferedReader(reader);
             String line;

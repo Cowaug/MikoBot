@@ -1,6 +1,6 @@
 package MikoBot;
 
-import MikoBot.MediaPlayer.MediaPlayer;
+import MikoBot.MediaPlayer.MediaInstance;
 import javafx.util.Pair;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -8,22 +8,25 @@ import net.dv8tion.jda.api.entities.VoiceChannel;
 import java.util.ArrayList;
 
 public class MediaManager {
-    private static ArrayList<Pair<Guild, MediaPlayer>> mediaManagerList = new ArrayList<>();
+    private static ArrayList<Pair<Guild, MediaInstance>> mediaManagerList = new ArrayList<>();
 
     /**
      * Try connecting to the voice channel
      * of a specific server
+     *
+     * Manage list of media instance
+     *
      * @param guild Server
      * @param voiceChannel Voice channel of that server
      * @return MediaPlayer of that server
      */
-    public static MediaPlayer connectTo(Guild guild, VoiceChannel voiceChannel) {
-        Pair<Guild, MediaPlayer> pair;
+    public static MediaInstance connectTo(Guild guild, VoiceChannel voiceChannel) {
+        Pair<Guild, MediaInstance> pair;
 
         if ((pair = findGuild(guild)) == null) {
-            MediaPlayer mediaPlayer = new MediaPlayer(guild, voiceChannel);
-            mediaManagerList.add(new Pair<>(guild, mediaPlayer));
-            return mediaPlayer;
+            MediaInstance mediaInstance = new MediaInstance(guild, voiceChannel);
+            mediaManagerList.add(new Pair<>(guild, mediaInstance));
+            return mediaInstance;
         } else {
             pair.getValue().reconnect(voiceChannel);
             return pair.getValue();
@@ -35,7 +38,7 @@ public class MediaManager {
      * @param guild Server
      * @return Pair of the server and it's MediaPlayer
      */
-    private static Pair<Guild, MediaPlayer> findGuild(final Guild guild) {
+    private static Pair<Guild, MediaInstance> findGuild(final Guild guild) {
         return mediaManagerList.stream().filter(p -> p.getKey().equals(guild)).findAny().orElse(null);
     }
 
