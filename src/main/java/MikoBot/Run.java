@@ -13,7 +13,7 @@ import java.net.URLDecoder;
 
 public class Run extends Application {
     public static String PROGRAM_PATH;
-
+    public static Console console;
     static {
         try {
             PROGRAM_PATH = URLDecoder.decode(Run.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF-8");
@@ -45,7 +45,7 @@ public class Run extends Application {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
-        new Console(args);
+        console = new Console(args);
         //launch(args);
     }
 }

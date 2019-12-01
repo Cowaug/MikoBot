@@ -13,6 +13,8 @@ import java.util.List;
 import java.util.Objects;
 
 public class MediaPlayback {
+    public static String MEDIA_PREFIX="/";
+
     /**
      * Start the media playback base on user request
      *

@@ -44,6 +44,7 @@ public class Console extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 if (botInstance == null) {
                     botInstance = new BotInstance(args[0],args[1]);
+                    startBtn.setText(args[1]);
                     startBtn.setEnabled(false);
                 }
             }
