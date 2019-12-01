@@ -33,6 +33,7 @@ public class Console extends JFrame {
         WindowAdapter adapter = new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                botInstance.shutdown();
                 System.exit(0);
             }
         };
