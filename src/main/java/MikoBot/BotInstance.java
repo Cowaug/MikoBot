@@ -52,6 +52,10 @@ public class BotInstance {
         }
     }
 
+    public String getId(){
+        return jda.getSelfUser().getId();
+    }
+
     public void shutdown() {
         jda.shutdownNow();
     }

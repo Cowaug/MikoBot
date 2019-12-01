@@ -21,6 +21,7 @@ public class MediaManager {
      * @return MediaPlayer of that server
      */
     public static MediaInstance connectTo(Guild guild, VoiceChannel voiceChannel) {
+        if(voiceChannel == null) return null;
         Pair<Guild, MediaInstance> pair;
 
         if ((pair = findGuild(guild)) == null) {

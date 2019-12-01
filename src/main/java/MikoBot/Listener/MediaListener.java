@@ -5,9 +5,11 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 public class MediaListener extends MessageListener {
     private MediaPlayback mediaPlayback = new MediaPlayback();
+
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         super.onMessageReceived(event);
-        mediaPlayback.start(event);
+        if (!event.getAuthor().isBot())
+            mediaPlayback.start(event);
     }
 }

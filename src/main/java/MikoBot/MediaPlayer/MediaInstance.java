@@ -74,7 +74,6 @@ public class MediaInstance {
      * @param url URL that contain the audio
      */
     public void play(String url, TextChannel textChannel) {
-
         playerManager.loadItem(url, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {

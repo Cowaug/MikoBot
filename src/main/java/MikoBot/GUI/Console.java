@@ -77,4 +77,8 @@ public class Console extends JFrame {
             frame.setVisible(true);
         }
     }
+
+    public String getBotId(){
+        return botInstance.getId();
+    }
 }

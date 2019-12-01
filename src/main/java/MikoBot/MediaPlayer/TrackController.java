@@ -16,6 +16,7 @@ public class TrackController extends AudioEventAdapter {
     private boolean loopOne = false;
     private boolean loopAll = false;
     private TextChannel textChannel = null;
+    private String oldMessageId = null;
     private AudioTrack currentTrack = null;
     private boolean hasTrack = false;
 
@@ -43,18 +44,17 @@ public class TrackController extends AudioEventAdapter {
             hasTrack = true;
             idx = 0;
             currentTrack = track.makeClone();
-            notifyNewSong();
             player.startTrack(currentTrack, false);
+            notifyNewSong();
         }
     }
 
     /**
      * Get all of the audio track in queue
      *
-     * @return List of AudioTrack
      */
-    public List<AudioTrack> getQueue() {
-        return list;
+    public void getQueue() {
+        this.textChannel.sendMessage(getPlayingList()).queue();
     }
 
     /**
@@ -190,6 +190,10 @@ public class TrackController extends AudioEventAdapter {
         this.textChannel = textChannel;
     }
 
+    public void setMessageId(String messageId) {
+        oldMessageId = messageId;
+    }
+
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         // Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
@@ -199,8 +203,21 @@ public class TrackController extends AudioEventAdapter {
     }
 
     private void notifyNewSong() {
-        if (this.textChannel != null)
-            this.textChannel.sendMessage("***```md\n# Playing\n " + idx + ". [" + currentTrack.getInfo().title + "][" + toMin(currentTrack.getInfo().length) + "]```***").queue();
+        if (this.textChannel == null) return;
+
+        StringBuilder output = new StringBuilder("***```md\n# Playing\n ").append(idx).append(". < ").append(toMin(currentTrack.getInfo().length)).append(" > || ").append(currentTrack.getInfo().title).append('\n').append("```***");
+        //this.textChannel.editMessageById(oldMessageId,output).queue();
+        this.textChannel.sendMessage(output.append(getPlayingList())).queue();
+    }
+
+    private StringBuilder getPlayingList() {
+        StringBuilder output = new StringBuilder("```md\n");
+        for (int i = 0; i < list.size(); i++) {
+            AudioTrack audioTrack = list.get(i);
+            output.append(i).append(". < ").append(toMin(audioTrack.getInfo().length)).append(" > || ").append(audioTrack.getInfo().title).append('\n');
+        }
+        output.append("```");
+        return output;
     }
 
     private String toMin(long l) {
