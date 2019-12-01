@@ -7,25 +7,12 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import net.dv8tion.jda.api.JDA;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 public class Run extends Application {
     public static String PROGRAM_PATH;
-
-    public static final String TTS = "TTS";
-
-    public static final String TTS_PREFIX = ".";
-    public static final String MEDIA_PREFIX = "/";
-
-    public static JDA jda;
-
-
-    public static Console console;
-
-    public static String[] arg;
 
     static {
         try {
@@ -58,7 +45,7 @@ public class Run extends Application {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
-        Console console = new Console(args);
+        new Console(args);
         //launch(args);
     }
 }

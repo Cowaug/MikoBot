@@ -1,4 +1,4 @@
-package MikoBot;
+package MikoBot.Listener;
 
 import MikoBot.Feature.MediaPlayback;
 import MikoBot.Feature.TextToSpeech;
@@ -12,35 +12,17 @@ import static MikoBot.Run.*;
 
 
 public class MessageListener extends ListenerAdapter {
-    private static TextToSpeech textToSpeech = new TextToSpeech();
-    private static MediaPlayback mediaPlayback = new MediaPlayback();
-    private String MODE = "tts";
-
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isFromType(ChannelType.PRIVATE)) {
             System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
                     event.getMessage().getContentDisplay());
             console.update("[PM] " + event.getAuthor().getName() + ": " + event.getMessage().getContentDisplay() + "\n");
-
         } else {
             System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
                     event.getTextChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(),
                     event.getMessage().getContentDisplay());
-
             console.update("[" + event.getGuild().getName() + "][" + event.getTextChannel().getName() + "]" +Objects.requireNonNull(event.getMember()).getEffectiveName() + ": " + event.getMessage().getContentDisplay() + "\n");
-
-            String message = event.getMessage().getContentDisplay();
-
-            switch (MODE) {
-                case TTS:
-                    textToSpeech.start(event, TextToSpeech.GOOGLE_TRANSLATE);
-                    break;
-                case "music":
-                    if (message.startsWith(MEDIA_PREFIX))
-                        mediaPlayback.start(event);
-                    break;
-            }
         }
     }
 }
