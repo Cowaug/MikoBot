@@ -15,6 +15,7 @@ public class TrackController extends AudioEventAdapter {
     private boolean loopAll = false;
     private TextChannel textChannel = null;
     private String oldMessageId = null;
+    private boolean lock = false;
 
     /**
      * Create the track scheduler for a player
@@ -37,17 +38,17 @@ public class TrackController extends AudioEventAdapter {
 //        if (textChannel != null)
 //            textChannel.sendMessage("*```md\n# Added \n" + track.getInfo().title + "```*").queue();
 
-        if (player.getPlayingTrack() == null) {
+        if (!lock && player.getPlayingTrack() == null) {
+            lock = true;
             player.startTrack(queue.getNext(), false);
-            notifyNewSong();
         }
+        notifyNewSong();
     }
 
     /**
      * Get all of the audio track in queue
      */
     public void getQueue() {
-        if (this.textChannel == null) return;
         this.textChannel.sendMessage(getPlayingList()).queue();
     }
 
@@ -61,9 +62,13 @@ public class TrackController extends AudioEventAdapter {
         } else if (loopAll) {
             player.startTrack(queue.getNextLoop(), false);
         } else {
-            player.startTrack(queue.getNext(), false);
+            AudioTrack audioTrack = queue.getNext();
+            if (audioTrack == null) {
+                player.startTrack(null, false);
+                lock = false;
+            } else player.startTrack(audioTrack, false);
         }
-        notifyNewSong();
+        getQueue();
     }
 
     /**
@@ -136,6 +141,7 @@ public class TrackController extends AudioEventAdapter {
     public void stop() {
         clear();
         player.startTrack(null, false);
+        lock = false;
     }
 
     /**
@@ -169,18 +175,20 @@ public class TrackController extends AudioEventAdapter {
     }
 
     private void notifyNewSong() {
-        if (this.textChannel == null) return;
-
         AudioTrack audioTrack = queue.getCurrent();
-        if(queue.getCurrent()==null) return;
-        StringBuilder output = new StringBuilder("***```md\n# Playing\n ")
-                .append(queue.getCurrentIndex())
-                .append(". < ")
-                .append(toMin(audioTrack.getInfo().length))
-                .append(" > || ")
-                .append(audioTrack.getInfo().title)
-                .append('\n')
-                .append("```***");
+        if (queue.getCurrent() == null) return;
+
+        StringBuilder output = new StringBuilder("");
+//                (queue.getCurrentIndex() < queue.getSize()) ?
+//                        new StringBuilder("***```md\n# Playing\n ")
+//                                .append(queue.getCurrentIndex())
+//                                .append(". < ")
+//                                .append(toMin(audioTrack.getInfo().length))
+//                                .append(" > @ ")
+//                                .append(audioTrack.getInfo().title)
+//                                .append('\n')
+//                                .append("```***") :
+//                        new StringBuilder("***```md\n# Stopped```*** ");
 
         //if (oldMessageId != null) this.textChannel.editMessageById(oldMessageId, output).queue();
 

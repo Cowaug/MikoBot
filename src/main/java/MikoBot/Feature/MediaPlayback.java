@@ -47,6 +47,7 @@ public class MediaPlayback {
 
             if (voiceChannel != null) {
                 mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
+                mediaInstance.getController().setTextChannel(textChannel);
                 switch (cmd) {
                     case "play":
                         if (!content.equals("")) {
@@ -118,7 +119,6 @@ public class MediaPlayback {
                         react(":x:");
                         return;
                 }
-                mediaInstance.getController().setTextChannel(textChannel);
                 react(":ok_hand:");
             } else {
                 react(":x:");
