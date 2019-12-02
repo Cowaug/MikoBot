@@ -9,7 +9,6 @@ public class MediaListener extends MessageListener {
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         super.onMessageReceived(event);
-        if (!event.getAuthor().isBot())
             mediaPlayback.start(event);
     }
 }

@@ -3,14 +3,12 @@ package MikoBot.Feature;
 import MikoBot.MediaManager;
 import MikoBot.MediaPlayer.MediaInstance;
 import MikoBot.Run;
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.vdurmont.emoji.EmojiParser;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import java.util.List;
 import java.util.Objects;
 
 public class MediaPlayback {
@@ -19,6 +17,7 @@ public class MediaPlayback {
     private String messageId;
     private MessageReceivedEvent event;
     private MediaInstance mediaInstance;
+
     /**
      * Start the media playback base on user request
      *
@@ -30,13 +29,15 @@ public class MediaPlayback {
         assert member != null;
 
         textChannel = event.getTextChannel();
-
         messageId = event.getMessageId();
 
         String[] message = event.getMessage().getContentDisplay().split("\n");
 
         for (String s : message) {
-            if (!s.startsWith(MEDIA_PREFIX)) continue;
+            if (!s.startsWith(MEDIA_PREFIX)) {
+                react(":x:");
+                continue;
+            }
             String content = s.substring(1);
 
             String cmd = content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length());
@@ -48,6 +49,7 @@ public class MediaPlayback {
             if (voiceChannel != null) {
                 mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
                 mediaInstance.getController().setTextChannel(textChannel);
+
                 switch (cmd) {
                     case "play":
                         if (!content.equals("")) {
@@ -129,8 +131,9 @@ public class MediaPlayback {
     private void react(String input) {
         if (!event.getAuthor().isBot())
             textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(input)).queue();
-        else if(event.getAuthor().getJDA().getSelfUser().getId().equals(Run.console.getBotId())){
-            if(mediaInstance!=null) mediaInstance.getController().setMessageId(event.getMessageId());
+        else if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(Run.console.getBotId()) && event.getMessage().getContentDisplay().startsWith("```")) {
+            if (mediaInstance != null) mediaInstance.getController().setMessageId(messageId);
         }
     }
+
 }

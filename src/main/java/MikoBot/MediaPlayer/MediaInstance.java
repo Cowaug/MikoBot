@@ -84,7 +84,6 @@ public class MediaInstance {
             @Override
             public void trackLoaded(AudioTrack track) {
                 if (textChannel != null) {
-
                     controller.queue(track);
                 } else {
                     controller.setVolume(75);
@@ -94,9 +93,7 @@ public class MediaInstance {
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                for (AudioTrack track : playlist.getTracks()) {
-                    controller.queue(track);
-                }
+                    controller.queueList(playlist);
             }
 
             @Override

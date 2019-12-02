@@ -2,6 +2,7 @@ package MikoBot.MediaPlayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
+import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -16,6 +17,7 @@ public class TrackController extends AudioEventAdapter {
     private TextChannel textChannel = null;
     private String oldMessageId = null;
     private boolean lock = false;
+
 
     /**
      * Create the track scheduler for a player
@@ -38,6 +40,28 @@ public class TrackController extends AudioEventAdapter {
 //        if (textChannel != null)
 //            textChannel.sendMessage("*```md\n# Added \n" + track.getInfo().title + "```*").queue();
 
+        if (!lock && player.getPlayingTrack() == null) {
+            lock = true;
+            player.startTrack(queue.getNext(), false);
+        }
+        notifyNewSong();
+    }
+
+    public void queueList(AudioPlaylist audioPlaylist){
+        for (AudioTrack track : audioPlaylist.getTracks()) {
+            queue.add(track);
+        }
+        if (!lock && player.getPlayingTrack() == null) {
+            lock = true;
+            player.startTrack(queue.getNext(), false);
+        }
+        notifyNewSong();
+    }
+
+    public void queueList(ArrayList<AudioTrack> audioPlaylist){
+        for (AudioTrack track : audioPlaylist) {
+            queue.add(track);
+        }
         if (!lock && player.getPlayingTrack() == null) {
             lock = true;
             player.startTrack(queue.getNext(), false);
@@ -68,7 +92,7 @@ public class TrackController extends AudioEventAdapter {
                 lock = false;
             } else player.startTrack(audioTrack, false);
         }
-        getQueue();
+        notifyNewSong();
     }
 
     /**
@@ -164,6 +188,7 @@ public class TrackController extends AudioEventAdapter {
 
     public void setMessageId(String messageId) {
         oldMessageId = messageId;
+        System.out.println(oldMessageId);
     }
 
     @Override
@@ -191,7 +216,8 @@ public class TrackController extends AudioEventAdapter {
 //                        new StringBuilder("***```md\n# Stopped```*** ");
 
         //if (oldMessageId != null) this.textChannel.editMessageById(oldMessageId, output).queue();
-
+        System.out.println(oldMessageId);
+        if (oldMessageId != null) this.textChannel.deleteMessageById(oldMessageId).queue();
         this.textChannel.sendMessage(output.append(getPlayingList())).queue();
     }
 
