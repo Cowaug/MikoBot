@@ -12,8 +12,8 @@ import net.dv8tion.jda.api.utils.Compression;
 import javax.security.auth.login.LoginException;
 
 public class BotInstance {
-    private static final String MUSIC = "Music";
-    private static final String TTS = "TTS";
+    public static final String MUSIC = "Music";
+    public static final String TTS = "TTS";
     private JDA jda;
     private String token;
     private String mode;
@@ -58,6 +58,10 @@ public class BotInstance {
 
     public void shutdown() {
         jda.shutdownNow();
+    }
+
+    public String getMode(){
+        return mode;
     }
 
     public void restart() {

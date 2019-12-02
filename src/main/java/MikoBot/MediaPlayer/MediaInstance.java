@@ -1,5 +1,6 @@
 package MikoBot.MediaPlayer;
 
+import MikoBot.Run;
 import com.sedmelluq.discord.lavaplayer.player.*;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager;
@@ -17,6 +18,8 @@ import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
+
+import static MikoBot.BotInstance.TTS;
 
 public class MediaInstance {
     private AudioPlayerManager playerManager;
@@ -44,7 +47,10 @@ public class MediaInstance {
         playerManager.registerSourceManager(new LocalAudioSourceManager());
 
         AudioPlayer player = playerManager.createPlayer();
-        controller = new TrackController(player);
+
+        if (Run.console.getMode().equals(TTS)) controller = new TtsController(player);
+        else controller = new TrackController(player);
+
         player.addListener(controller);
         controller.setVolume(25);
         audioManager = guild.getAudioManager();
@@ -105,7 +111,7 @@ public class MediaInstance {
         });
     }
 
-    public TrackController getController(){
+    public TrackController getController() {
         return controller;
     }
 }

@@ -81,4 +81,8 @@ public class Console extends JFrame {
     public String getBotId(){
         return botInstance.getId();
     }
+
+    public String getMode(){
+        return botInstance.getMode();
+    }
 }

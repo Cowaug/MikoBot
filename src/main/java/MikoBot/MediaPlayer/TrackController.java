@@ -7,18 +7,14 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class TrackController extends AudioEventAdapter {
-    private final AudioPlayer player;
-    private final ArrayList<AudioTrack> list;
-    private int idx;
+    protected AudioPlayer player;
+    protected Queue queue;
     private boolean loopOne = false;
     private boolean loopAll = false;
     private TextChannel textChannel = null;
     private String oldMessageId = null;
-    private AudioTrack currentTrack = null;
-    private boolean hasTrack = false;
 
     /**
      * Create the track scheduler for a player
@@ -27,7 +23,7 @@ public class TrackController extends AudioEventAdapter {
      */
     TrackController(AudioPlayer player) {
         this.player = player;
-        this.list = new ArrayList<>();
+        this.queue = new Queue();
     }
 
     /**
@@ -36,24 +32,22 @@ public class TrackController extends AudioEventAdapter {
      * @param track Audio track to queue
      */
     public void queue(AudioTrack track) {
-        list.add(track);
-        if (textChannel != null)
-            textChannel.sendMessage("*```md\n# Added \n" + track.getInfo().title + "```*").queue();
+        queue.add(track);
 
-        if (!hasTrack && player.getPlayingTrack() == null) {
-            hasTrack = true;
-            idx = 0;
-            currentTrack = track.makeClone();
-            player.startTrack(currentTrack, false);
+//        if (textChannel != null)
+//            textChannel.sendMessage("*```md\n# Added \n" + track.getInfo().title + "```*").queue();
+
+        if (player.getPlayingTrack() == null) {
+            player.startTrack(queue.getNext(), false);
             notifyNewSong();
         }
     }
 
     /**
      * Get all of the audio track in queue
-     *
      */
     public void getQueue() {
+        if (this.textChannel == null) return;
         this.textChannel.sendMessage(getPlayingList()).queue();
     }
 
@@ -62,26 +56,14 @@ public class TrackController extends AudioEventAdapter {
      * Playing the null track will stop the player
      */
     public void nextTrack() {
-
         if (loopOne) {
-            currentTrack = list.get(idx).makeClone();
-            player.startTrack(currentTrack, false);
-            notifyNewSong();
+            player.startTrack(queue.getCurrent(), false);
+        } else if (loopAll) {
+            player.startTrack(queue.getNextLoop(), false);
         } else {
-            idx++;
-            if (loopAll) {
-                idx = idx % list.size();
-                currentTrack = list.get(idx).makeClone();
-                player.startTrack(currentTrack, false);
-                notifyNewSong();
-            } else if (idx >= list.size()) {
-                idx = 0;
-                player.startTrack(null, false);
-                hasTrack = false;
-                if (this.textChannel != null)
-                    this.textChannel.sendMessage("End of queue").queue();
-            }
+            player.startTrack(queue.getNext(), false);
         }
+        notifyNewSong();
     }
 
     /**
@@ -90,12 +72,7 @@ public class TrackController extends AudioEventAdapter {
      * @param newIdx index of track in queue
      */
     public void jumpTo(int newIdx) {
-        if (idx >= list.size())
-            return;
-        idx = newIdx;
-        currentTrack = list.get(idx).makeClone();
-        player.startTrack(currentTrack, false);
-        hasTrack = false;
+        player.startTrack(queue.get(newIdx), false);
         notifyNewSong();
     }
 
@@ -150,7 +127,7 @@ public class TrackController extends AudioEventAdapter {
      * Clear the remaining queue
      */
     public void clear() {
-        while (!list.isEmpty()) list.remove(0);
+        queue.clearAll();
     }
 
     /**
@@ -159,7 +136,6 @@ public class TrackController extends AudioEventAdapter {
     public void stop() {
         clear();
         player.startTrack(null, false);
-        hasTrack = false;
     }
 
     /**
@@ -168,17 +144,7 @@ public class TrackController extends AudioEventAdapter {
      * @param i position of track in queue
      */
     public void remove(int i) {
-        if (i >= list.size() || i < 0) return;
-        if (idx == i) {
-            if (list.size() == 1)
-                stop();
-            else {
-                nextTrack();
-                idx--;
-            }
-        }
-        if (list.size() <= 1 && i == 0) list.clear();
-        else list.remove(i);
+        queue.remove(i);
     }
 
     /**
@@ -205,16 +171,34 @@ public class TrackController extends AudioEventAdapter {
     private void notifyNewSong() {
         if (this.textChannel == null) return;
 
-        StringBuilder output = new StringBuilder("***```md\n# Playing\n ").append(idx).append(". < ").append(toMin(currentTrack.getInfo().length)).append(" > || ").append(currentTrack.getInfo().title).append('\n').append("```***");
-        //this.textChannel.editMessageById(oldMessageId,output).queue();
+        AudioTrack audioTrack = queue.getCurrent();
+        if(queue.getCurrent()==null) return;
+        StringBuilder output = new StringBuilder("***```md\n# Playing\n ")
+                .append(queue.getCurrentIndex())
+                .append(". < ")
+                .append(toMin(audioTrack.getInfo().length))
+                .append(" > || ")
+                .append(audioTrack.getInfo().title)
+                .append('\n')
+                .append("```***");
+
+        //if (oldMessageId != null) this.textChannel.editMessageById(oldMessageId, output).queue();
+
         this.textChannel.sendMessage(output.append(getPlayingList())).queue();
     }
 
     private StringBuilder getPlayingList() {
         StringBuilder output = new StringBuilder("```md\n");
+        ArrayList<AudioTrack> list = queue.getList();
         for (int i = 0; i < list.size(); i++) {
             AudioTrack audioTrack = list.get(i);
-            output.append(i).append(". < ").append(toMin(audioTrack.getInfo().length)).append(" > || ").append(audioTrack.getInfo().title).append('\n');
+            output.append(i)
+                    .append(". < ")
+                    .append(toMin(audioTrack.getInfo().length))
+                    .append(" > ")
+                    .append(i == queue.getCurrentIndex() ? " @ " : "   ")
+                    .append(audioTrack.getInfo().title)
+                    .append('\n');
         }
         output.append("```");
         return output;

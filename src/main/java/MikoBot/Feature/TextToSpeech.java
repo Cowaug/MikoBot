@@ -72,13 +72,14 @@ public class TextToSpeech {
         if (voiceChannel != null) {
             String cmd = getCmd(content);
             content = content.replaceFirst(cmd, "");
+            MediaInstance mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
             switch (cmd) {
                 case ",":
                     textChannel.deleteMessageById(messageId).queue();
-                    GoogleTranslate(MediaManager.connectTo(event.getGuild(), voiceChannel), content);
+                    GoogleTranslate(mediaInstance, content);
                     return;
                 case ".":
-                    GoogleTranslate(MediaManager.connectTo(event.getGuild(), voiceChannel), content);
+                    GoogleTranslate(mediaInstance, content);
                     return;
                 case "lockme":
                     if (!autoTTS.contains(memberId)) autoTTS.add(memberId);
@@ -96,8 +97,8 @@ public class TextToSpeech {
                     autoTTSDelete.remove(memberId);
                     save(autoTTSDelete, "autoTTSDelete.txt");
                     break;
-                case "stop":
-                    MediaManager.connectTo(event.getGuild(), voiceChannel).getController().stop();
+                case "skip":
+                    MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack();
 
                     break;
                 default:
