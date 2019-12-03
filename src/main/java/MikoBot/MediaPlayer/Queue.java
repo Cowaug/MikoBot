@@ -34,7 +34,7 @@ public class Queue {
         return audioTracks.get(currentIndex).makeClone();
     }
 
-    public AudioTrack pull() {
+    AudioTrack pull() {
         if (audioTracks.size() <= 0) return null;
         AudioTrack audioTrack = audioTracks.get(0);
         audioTracks.remove(0);

@@ -10,8 +10,8 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import java.util.ArrayList;
 
 public class TrackController extends AudioEventAdapter {
-    protected AudioPlayer player;
-    protected Queue queue;
+    AudioPlayer player;
+    Queue queue;
     private boolean loopOne = false;
     private boolean loopAll = false;
     private TextChannel textChannel = null;
