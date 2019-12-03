@@ -1,14 +1,8 @@
-package MikoBot.Listener;
+package MikoBot.Feature.Ultils.Listener;
 
-import MikoBot.Feature.MediaPlayback;
-import MikoBot.Feature.TextToSpeech;
 import net.dv8tion.jda.api.entities.ChannelType;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
-
-import java.util.Objects;
-
-import static MikoBot.Run.*;
 
 
 public class MessageListener extends ListenerAdapter {

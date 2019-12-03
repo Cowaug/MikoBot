@@ -1,8 +1,8 @@
 package MikoBot;
 
-import MikoBot.Listener.MediaListener;
-import MikoBot.Listener.MessageListener;
-import MikoBot.Listener.TTSListener;
+import MikoBot.Feature.Ultils.Listener.MediaListener;
+import MikoBot.Feature.Ultils.Listener.MessageListener;
+import MikoBot.Feature.Ultils.Listener.TTSListener;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;

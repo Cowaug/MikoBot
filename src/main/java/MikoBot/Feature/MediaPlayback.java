@@ -1,8 +1,8 @@
 package MikoBot.Feature;
 
-import MikoBot.MediaManager;
-import MikoBot.MediaPlayer.MapMessageIDChannel;
-import MikoBot.MediaPlayer.MediaInstance;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
+import MikoBot.Feature.Ultils.MediaPlayer.MapMessageIDChannel;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaInstance;
 import MikoBot.Run;
 import com.vdurmont.emoji.EmojiParser;
 import net.dv8tion.jda.api.entities.Member;

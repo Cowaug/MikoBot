@@ -1,4 +1,4 @@
-package MikoBot.Feature.Ultils;
+package MikoBot.Feature.Ultils.AutoReplaceWords;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;

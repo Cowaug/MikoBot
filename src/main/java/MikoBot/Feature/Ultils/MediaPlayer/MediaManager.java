@@ -1,6 +1,6 @@
-package MikoBot;
+package MikoBot.Feature.Ultils.MediaPlayer;
 
-import MikoBot.MediaPlayer.MediaInstance;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaInstance;
 import javafx.util.Pair;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.VoiceChannel;

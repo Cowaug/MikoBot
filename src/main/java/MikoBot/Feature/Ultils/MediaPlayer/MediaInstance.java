@@ -1,4 +1,4 @@
-package MikoBot.MediaPlayer;
+package MikoBot.Feature.Ultils.MediaPlayer;
 
 import MikoBot.Run;
 import com.sedmelluq.discord.lavaplayer.player.*;
