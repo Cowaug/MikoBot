@@ -43,7 +43,7 @@ public class TrackController extends AudioEventAdapter {
             lock = true;
             player.startTrack(queue.getNext(), false);
         }
-        notifyNewSong();
+        sendMessage();
     }
 
     public void queueList(AudioPlaylist audioPlaylist) {
@@ -54,7 +54,8 @@ public class TrackController extends AudioEventAdapter {
             lock = true;
             player.startTrack(queue.getNext(), false);
         }
-        notifyNewSong();
+        sendMessage();
+
     }
 
     public void queueList(ArrayList<AudioTrack> audioPlaylist) {
@@ -65,14 +66,15 @@ public class TrackController extends AudioEventAdapter {
             lock = true;
             player.startTrack(queue.getNext(), false);
         }
-        notifyNewSong();
+        sendMessage();
+
     }
 
     /**
      * Get all of the audio track in queue
      */
     public void getQueue() {
-        this.textChannel.sendMessage(getPlayingList()).queue();
+        getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
     }
 
     /**
@@ -91,7 +93,8 @@ public class TrackController extends AudioEventAdapter {
                 lock = false;
             } else player.startTrack(audioTrack, false);
         }
-        notifyNewSong();
+        sendMessage();
+
     }
 
     /**
@@ -101,7 +104,8 @@ public class TrackController extends AudioEventAdapter {
      */
     public void jumpTo(int newIdx) {
         player.startTrack(queue.get(newIdx), false);
-        notifyNewSong();
+        sendMessage();
+
     }
 
     /**
@@ -193,53 +197,28 @@ public class TrackController extends AudioEventAdapter {
         }
     }
 
-    private void notifyNewSong() {
-        AudioTrack audioTrack = queue.getCurrent();
-        if (queue.getCurrent() == null) return;
-
-        StringBuilder output = new StringBuilder("");
-//                (queue.getCurrentIndex() < queue.getSize()) ?
-//                        new StringBuilder("***```md\n# Playing\n ")
-//                                .append(queue.getCurrentIndex())
-//                                .append(". < ")
-//                                .append(toMin(audioTrack.getInfo().length))
-//                                .append(" > @ ")
-//                                .append(audioTrack.getInfo().title)
-//                                .append('\n')
-//                                .append("```***") :
-//                        new StringBuilder("***```md\n# Stopped```*** ");
-
-        //if (oldMessageId != null) this.textChannel.editMessageById(oldMessageId, output).queue();
-
-        String lastMessageId = MapMessageIDChannel.getBotLastMessageId(textChannel);
-
-        if (lastMessageId != null)
-            if (MapMessageIDChannel.editable(textChannel)) {
-                this.textChannel.editMessageById(lastMessageId, output.append(getPlayingList())).queue();
-            } else {
-                this.textChannel.deleteMessageById(lastMessageId).queue();
-                this.textChannel.sendMessage(output.append(getPlayingList())).queue();
-            }
-        else {
-            this.textChannel.sendMessage(output.append(getPlayingList())).queue();
-        }
-    }
-
-    private StringBuilder getPlayingList() {
-        StringBuilder output = new StringBuilder("```md\n");
+    private ArrayList<String> getPlayingList() {
+        String output = "```md\n";
         ArrayList<AudioTrack> list = queue.getList();
+        ArrayList<String> strings = new ArrayList<>();
+
         for (int i = 0; i < list.size(); i++) {
             AudioTrack audioTrack = list.get(i);
-            output.append(i)
-                    .append(". < ")
-                    .append(toMin(audioTrack.getInfo().length))
-                    .append(" > ")
-                    .append(i == queue.getCurrentIndex() ? " @ " : "   ")
-                    .append(audioTrack.getInfo().title)
-                    .append('\n');
+            output = i
+                    + ". < "
+                    + toMin(audioTrack.getInfo().length)
+                    + " > "
+                    + (i == queue.getCurrentIndex() ? " @ " : "   ")
+                    + audioTrack.getInfo().title
+                    + '\n';
+
+            if (i % 10 == 9) {
+                strings.add(output + "```");
+                output = "```md\n";
+            }
         }
-        output.append("```");
-        return output;
+        strings.add(output.equals("```md\n") ? "" : output + "```");
+        return strings;
     }
 
     private String toMin(long l) {
@@ -250,5 +229,21 @@ public class TrackController extends AudioEventAdapter {
         String ret = min.substring(min.length() - 2) + ":" + sec.substring(sec.length() - 2);
         if (hour > 0) return hour + ":" + ret;
         else return ret;
+    }
+
+    private void sendMessage() {
+        String lastMessageId = MapMessageIDChannel.getBotLastMessageId(textChannel);
+
+        if (lastMessageId != null)
+            if (MapMessageIDChannel.editable(textChannel)) {
+                getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+            } else {
+                this.textChannel.deleteMessageById(lastMessageId).queue();
+                getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+            }
+        else {
+            getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+        }
+
     }
 }

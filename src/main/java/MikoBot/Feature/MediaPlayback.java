@@ -34,6 +34,11 @@ public class MediaPlayback {
 
         String[] message = event.getMessage().getContentDisplay().split("\n");
 
+        MapMessageIDChannel.setCurrentMessageId(textChannel,event.getMessageId());
+        if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(Run.console.getBotId()) && event.getMessage().getContentDisplay().startsWith("```")) {
+            MapMessageIDChannel.setBotLastMessageId(textChannel,event.getMessageId());
+        }
+
         Thread thread = new Thread(new Runnable() {
             @Override
             public void run() {
@@ -143,12 +148,8 @@ public class MediaPlayback {
     }
 
     private void react(String input) {
-        MapMessageIDChannel.setCurrentMessageId(textChannel,event.getMessageId());
         if (!event.getAuthor().isBot()) {
             textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(input)).queue();
-        }
-        else if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(Run.console.getBotId()) && event.getMessage().getContentDisplay().startsWith("```")) {
-            MapMessageIDChannel.setBotLastMessageId(textChannel,event.getMessageId());
         }
     }
 
