@@ -15,7 +15,6 @@ public class TrackController extends AudioEventAdapter {
     private boolean loopOne = false;
     private boolean loopAll = false;
     private TextChannel textChannel = null;
-    private String oldMessageId = null;
     private boolean lock = false;
 
 
@@ -47,7 +46,7 @@ public class TrackController extends AudioEventAdapter {
         notifyNewSong();
     }
 
-    public void queueList(AudioPlaylist audioPlaylist){
+    public void queueList(AudioPlaylist audioPlaylist) {
         for (AudioTrack track : audioPlaylist.getTracks()) {
             queue.add(track);
         }
@@ -58,7 +57,7 @@ public class TrackController extends AudioEventAdapter {
         notifyNewSong();
     }
 
-    public void queueList(ArrayList<AudioTrack> audioPlaylist){
+    public void queueList(ArrayList<AudioTrack> audioPlaylist) {
         for (AudioTrack track : audioPlaylist) {
             queue.add(track);
         }
@@ -186,11 +185,6 @@ public class TrackController extends AudioEventAdapter {
         this.textChannel = textChannel;
     }
 
-    public void setMessageId(String messageId) {
-        oldMessageId = messageId;
-        System.out.println(oldMessageId);
-    }
-
     @Override
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         // Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
@@ -216,9 +210,19 @@ public class TrackController extends AudioEventAdapter {
 //                        new StringBuilder("***```md\n# Stopped```*** ");
 
         //if (oldMessageId != null) this.textChannel.editMessageById(oldMessageId, output).queue();
-        System.out.println(oldMessageId);
-        if (oldMessageId != null) this.textChannel.deleteMessageById(oldMessageId).queue();
-        this.textChannel.sendMessage(output.append(getPlayingList())).queue();
+
+        String lastMessageId = MapMessageIDChannel.getBotLastMessageId(textChannel);
+
+        if (lastMessageId != null)
+            if (MapMessageIDChannel.editable(textChannel)) {
+                this.textChannel.editMessageById(lastMessageId, output.append(getPlayingList())).queue();
+            } else {
+                this.textChannel.deleteMessageById(lastMessageId).queue();
+                this.textChannel.sendMessage(output.append(getPlayingList())).queue();
+            }
+        else {
+            this.textChannel.sendMessage(output.append(getPlayingList())).queue();
+        }
     }
 
     private StringBuilder getPlayingList() {
