@@ -1,8 +1,8 @@
 package MikoBot.Feature;
 
 import MikoBot.Feature.Ultils.AutoReplaceWords.Slang;
-import MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
 import MikoBot.Feature.Ultils.MediaPlayer.MediaInstance;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
 import MikoBot.Run;
 import com.vdurmont.emoji.EmojiParser;
 import net.dv8tion.jda.api.entities.Member;
@@ -28,6 +28,7 @@ public class TextToSpeech {
 
     private ArrayList<String> autoTTS;
     private ArrayList<String> autoTTSDelete;
+    private boolean autoIgnore = true;
 
     /**
      * Load the list of user whom prefer
@@ -58,16 +59,17 @@ public class TextToSpeech {
         String content = event.getMessage().getContentDisplay();
 
         if (content.startsWith(TTS_PREFIX)) {
+            autoIgnore = false;
             content = content.replaceFirst(TTS_PREFIX, "");
         } else if (!content.startsWith(MEDIA_PREFIX) &&
                 !content.startsWith(IGNORE_PREFIX) &&
-                autoTTS.contains(memberId))
+                autoTTS.contains(memberId)) {
+            autoIgnore = true;
             if (autoTTSDelete.contains(memberId))
                 content = "," + content;
             else content = "." + content;
-        else return;
+        } else return;
 
-        //System.out.println(content);
         VoiceChannel voiceChannel = Objects.requireNonNull(member.getVoiceState()).getChannel();
         if (voiceChannel != null) {
             String cmd = getCmd(content);
@@ -99,7 +101,6 @@ public class TextToSpeech {
                     break;
                 case "skip":
                     MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack();
-
                     break;
                 default:
                     textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
@@ -108,8 +109,7 @@ public class TextToSpeech {
             }
             textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":ok_hand:")).queue();
         } else {
-            //HelpAndConfig.printWarning(textChannel, member, "You must in voice");
-            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+            if (!autoIgnore) textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
         }
     }
 

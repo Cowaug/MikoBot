@@ -44,7 +44,6 @@ public class MediaPlayback {
             public void run() {
                 for (String s : message) {
                     if (!s.startsWith(MEDIA_PREFIX)) {
-                        react(":x:");
                         continue;
                     }
                     String content = s.substring(1);
@@ -134,7 +133,7 @@ public class MediaPlayback {
                                         mediaInstance.getController().getQueue(0);
                                         break;
                                     } else if ((page = Integer.parseInt(content)) > 0) {
-                                        mediaInstance.getController().getQueue(page - 1);
+                                        mediaInstance.getController().getQueue(page);
                                         break;
                                     } else {
                                         react(":x:");
@@ -161,7 +160,6 @@ public class MediaPlayback {
     }
 
     private void react(String input) {
-
         if (!event.getAuthor().isBot()) {
             textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(input)).queue();
         }
