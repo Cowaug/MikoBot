@@ -10,6 +10,11 @@ public class AudioPlayerSendHandler implements AudioSendHandler {
     private final AudioPlayer audioPlayer;
     private AudioFrame lastFrame;
 
+    /**
+     * Implement AudioSendHandler for discord specifically
+     *
+     * @param audioPlayer Audio player
+     */
     AudioPlayerSendHandler(AudioPlayer audioPlayer) {
         this.audioPlayer = audioPlayer;
     }

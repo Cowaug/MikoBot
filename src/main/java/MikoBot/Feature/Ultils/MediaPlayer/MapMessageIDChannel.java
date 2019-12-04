@@ -4,21 +4,43 @@ import net.dv8tion.jda.api.entities.TextChannel;
 
 import java.util.ArrayList;
 
+/**
+ * Create an array to save
+ * channel's last messageId and bot's last messageId
+ * on that channel for future edit/delete
+ */
 public class MapMessageIDChannel {
     private static ArrayList<Mapping> mapping = new ArrayList<>();
 
+    /**
+     * Get bot's last messageId on an text channel
+     *
+     * @param textChannel Text channel
+     * @return messageId
+     */
     public static String getBotLastMessageId(TextChannel textChannel) {
         Mapping tmp = getMapping(textChannel);
         if (tmp == null) return null;
         return tmp.getBotLastMessageId();
     }
 
+
+    /**
+     * Check if last message was sent by bot or user
+     *
+     * @param textChannel Text channel
+     * @return is the last message was sent by this bot
+     */
     public static boolean editable(TextChannel textChannel) {
         Mapping tmp = getMapping(textChannel);
         if (tmp == null) return false;
         return tmp.editable();
     }
 
+    /**
+     * @param textChannel Text channel to find
+     * @return Mapping object of text channel, botLastMessId, lastMessId
+     */
     private static Mapping getMapping(TextChannel textChannel) {
         return mapping.stream().filter(p -> p.getTextChannel().equals(textChannel)).findAny().orElse(null);
     }

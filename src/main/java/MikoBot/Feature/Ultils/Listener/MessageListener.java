@@ -6,6 +6,12 @@ import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
 
 public class MessageListener extends ListenerAdapter {
+
+    /**
+     * Action when receive a message
+     *
+     * @param event Message received event
+     */
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         if (event.isFromType(ChannelType.PRIVATE)) {
