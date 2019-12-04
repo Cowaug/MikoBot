@@ -204,7 +204,7 @@ public class TrackController extends AudioEventAdapter {
         int i = 0;
         final String start = "```md\n"
                 + "#PLAYING "
-                + queue.getCurrentIndex()
+                + queue.getCurrentIndex() + 1
                 + ". "
                 + queue.getCurrent().getInfo().title
                 + "\n\n";

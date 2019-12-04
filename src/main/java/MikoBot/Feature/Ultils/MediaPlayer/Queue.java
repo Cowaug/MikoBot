@@ -64,6 +64,7 @@ public class Queue {
     int getCurrentIndex(){
         return currentIndex;
     }
+
     int getSize(){
         return audioTracks.size();
     }
