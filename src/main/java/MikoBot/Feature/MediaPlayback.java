@@ -67,9 +67,7 @@ public class MediaPlayback {
                                         mediaInstance.getController().jumpTo(customIdx - 1);
                                         break;
                                     } catch (Exception ignored) {
-                                        System.out.println("Not index");
                                         mediaInstance.play(content, textChannel);
-
                                         try {
                                             Thread.sleep(1000);
                                         } catch (InterruptedException e) {
@@ -132,7 +130,6 @@ public class MediaPlayback {
                             case "queue":
                                 try {
                                     int page;
-                                    System.out.println(content);
                                     if (content.equals("")) {
                                         mediaInstance.getController().getQueue(0);
                                         break;
