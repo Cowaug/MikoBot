@@ -7,30 +7,17 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.stage.Stage;
 import javafx.stage.StageStyle;
-import net.dv8tion.jda.api.JDA;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 
 public class Run extends Application {
-    public static String PATH;
-
-    public static final String TTS = "TTS";
-
-    public static final String TTS_PREFIX = ".";
-    public static final String MEDIA_PREFIX = "/";
-
-    public static JDA jda;
-
-
+    public static String PROGRAM_PATH;
     public static Console console;
-
-    public static String[] arg;
-
     static {
         try {
-            PATH = URLDecoder.decode(Run.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF-8");
-            PATH = PATH.substring(1, PATH.lastIndexOf("/"));
+            PROGRAM_PATH = URLDecoder.decode(Run.class.getProtectionDomain().getCodeSource().getLocation().getPath(), "UTF-8");
+            PROGRAM_PATH = PROGRAM_PATH.substring(1, PROGRAM_PATH.lastIndexOf("/"));
             //System.out.println(PATH);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
@@ -58,7 +45,7 @@ public class Run extends Application {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
-        //Console console = new Console();
-        launch(args);
+        console = new Console(args);
+        //launch(args);
     }
 }

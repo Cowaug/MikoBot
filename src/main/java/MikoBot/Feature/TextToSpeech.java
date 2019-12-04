@@ -1,25 +1,30 @@
 package MikoBot.Feature;
 
-import com.vdurmont.emoji.EmojiParser;
-import MikoBot.Feature.Ultils.Slang;
-import MikoBot.MediaManager;
-import MikoBot.MediaPlayer.MediaPlayer;
+import MikoBot.Feature.Ultils.AutoReplaceWords.Slang;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaInstance;
 import MikoBot.Run;
-import net.dv8tion.jda.api.entities.*;
+import com.vdurmont.emoji.EmojiParser;
+import net.dv8tion.jda.api.entities.Member;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.io.*;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Objects;
-import static MikoBot.Run.MEDIA_PREFIX;
-import static MikoBot.Run.TTS_PREFIX;
+
+import static MikoBot.Feature.MediaPlayback.MEDIA_PREFIX;
 
 public class TextToSpeech {
     private static final String EN = "en";
     private static final String VN = "vi";
     private static final String JP = "ja";
     public static final String GOOGLE_TRANSLATE = "gt";
+
+    public static String TTS_PREFIX = ".";
+    public static String IGNORE_PREFIX = "`";
 
     private ArrayList<String> autoTTS;
     private ArrayList<String> autoTTSDelete;
@@ -47,35 +52,34 @@ public class TextToSpeech {
     public void start(MessageReceivedEvent event, String engine) {
         Member member = event.getMember();
         assert member != null;
-
         String memberId = member.getId();
         TextChannel textChannel = event.getTextChannel();
         String messageId = event.getMessageId();
         String content = event.getMessage().getContentDisplay();
 
-        if (!event.getMessage().getContentDisplay().startsWith(TTS_PREFIX) &&
-                !event.getMessage().getContentDisplay().startsWith(MEDIA_PREFIX) &&
-                !event.getMessage().getContentDisplay().startsWith("`") &&
+        if (content.startsWith(TTS_PREFIX)) {
+            content = content.replaceFirst(TTS_PREFIX, "");
+        } else if (!content.startsWith(MEDIA_PREFIX) &&
+                !content.startsWith(IGNORE_PREFIX) &&
                 autoTTS.contains(memberId))
             if (autoTTSDelete.contains(memberId))
                 content = "," + content;
             else content = "." + content;
-        else if (event.getMessage().getContentDisplay().startsWith(TTS_PREFIX)) {
-            content = content.replaceFirst(TTS_PREFIX, "");
-        } else return;
+        else return;
 
-        System.out.println(content);
+        //System.out.println(content);
         VoiceChannel voiceChannel = Objects.requireNonNull(member.getVoiceState()).getChannel();
         if (voiceChannel != null) {
             String cmd = getCmd(content);
             content = content.replaceFirst(cmd, "");
+            MediaInstance mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
             switch (cmd) {
                 case ",":
                     textChannel.deleteMessageById(messageId).queue();
-                    GoogleTranslate(MediaManager.connectTo(event.getGuild(), voiceChannel), content);
+                    GoogleTranslate(mediaInstance, content);
                     return;
                 case ".":
-                    GoogleTranslate(MediaManager.connectTo(event.getGuild(), voiceChannel), content);
+                    GoogleTranslate(mediaInstance, content);
                     return;
                 case "lockme":
                     if (!autoTTS.contains(memberId)) autoTTS.add(memberId);
@@ -93,8 +97,8 @@ public class TextToSpeech {
                     autoTTSDelete.remove(memberId);
                     save(autoTTSDelete, "autoTTSDelete.txt");
                     break;
-                case "stop":
-                    MediaManager.connectTo(event.getGuild(), voiceChannel).getController().stop();
+                case "skip":
+                    MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack();
 
                     break;
                 default:
@@ -113,10 +117,10 @@ public class TextToSpeech {
      * Speak the text using the server's player
      * created previously
      *
-     * @param mediaPlayer Server's player
-     * @param text        Text user wants to speak
+     * @param mediaInstance Server's player
+     * @param text          Text user wants to speak
      */
-    private void GoogleTranslate(MediaPlayer mediaPlayer, String text) {
+    private void GoogleTranslate(MediaInstance mediaInstance, String text) {
         text = Slang.makeFormal(text);
         String language = VN;
         if (text.startsWith(EN + " ")) {
@@ -132,7 +136,7 @@ public class TextToSpeech {
 
         String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=" + language + "&q=";
         try {
-            mediaPlayer.play(url + URLEncoder.encode(text, "UTF-8"), null);
+            mediaInstance.play(url + URLEncoder.encode(text, "UTF-8"), null);
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -165,7 +169,7 @@ public class TextToSpeech {
         FileWriter writer = null;
         BufferedWriter bufferedWriter = null;
         try {
-            writer = new FileWriter(Run.PATH + "/" + filename);
+            writer = new FileWriter(Run.PROGRAM_PATH + "/" + filename);
             bufferedWriter = new BufferedWriter(writer);
             for (String s : arrayList) {
                 bufferedWriter.write(s + "\n");
@@ -195,7 +199,7 @@ public class TextToSpeech {
         FileReader reader = null;
         BufferedReader bufferedReader = null;
         try {
-            reader = new FileReader(Run.PATH + "/" + filename);
+            reader = new FileReader(Run.PROGRAM_PATH + "/" + filename);
             bufferedReader = new BufferedReader(reader);
             String line;
             while ((line = bufferedReader.readLine()) != null) {

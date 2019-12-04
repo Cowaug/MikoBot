@@ -1,122 +1,156 @@
 package MikoBot.Feature;
 
-import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
+import MikoBot.Feature.Ultils.MediaPlayer.MapMessageIDChannel;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaInstance;
+import MikoBot.Run;
 import com.vdurmont.emoji.EmojiParser;
-import MikoBot.MediaManager;
-import MikoBot.MediaPlayer.MediaPlayer;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import java.util.List;
 import java.util.Objects;
 
 public class MediaPlayback {
+    public static String MEDIA_PREFIX = "/";
+    private TextChannel textChannel;
+    private String messageId;
+    private MessageReceivedEvent event;
+    private MediaInstance mediaInstance;
+
     /**
      * Start the media playback base on user request
      *
      * @param event User event which trigger this
      */
     public void start(MessageReceivedEvent event) {
+        this.event = event;
         Member member = event.getMember();
         assert member != null;
-        String memberId = member.getId();
-        TextChannel textChannel = event.getTextChannel();
-        String messageId = event.getMessageId();
+
+        textChannel = event.getTextChannel();
+        messageId = event.getMessageId();
 
         String[] message = event.getMessage().getContentDisplay().split("\n");
 
-        for (String s : message) {
-            String content = s.substring(1);
+        MapMessageIDChannel.setCurrentMessageId(textChannel,event.getMessageId());
+        if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(Run.console.getBotId()) && event.getMessage().getContentDisplay().startsWith("```")) {
+            MapMessageIDChannel.setBotLastMessageId(textChannel,event.getMessageId());
+        }
 
-            String cmd = content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length());
+        Thread thread = new Thread(new Runnable() {
+            @Override
+            public void run() {
+                for (String s : message) {
+                    if (!s.startsWith(MEDIA_PREFIX)) {
+                        react(":x:");
+                        continue;
+                    }
+                    String content = s.substring(1);
 
-            content = content.replaceFirst(cmd, "").replace(" ", "");
+                    String cmd = content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length());
 
-            VoiceChannel voiceChannel = Objects.requireNonNull(member.getVoiceState()).getChannel();
-            if (voiceChannel != null) {
-                MediaPlayer mediaPlayer = MediaManager.connectTo(event.getGuild(), voiceChannel);
-                switch (cmd) {
-                    case "play":
-                        if (!content.equals("")) {
-                            try {
-                                int customIdx = Integer.parseInt(content);
-                                mediaPlayer.getController().jumpTo(customIdx);
+                    content = content.replaceFirst(cmd, "").replace(" ", "");
+
+                    VoiceChannel voiceChannel = Objects.requireNonNull(member.getVoiceState()).getChannel();
+
+                    if (voiceChannel != null) {
+                        mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
+                        mediaInstance.getController().setTextChannel(textChannel);
+
+                        switch (cmd) {
+                            case "play":
+                                if (!content.equals("")) {
+                                    try {
+                                        int customIdx = Integer.parseInt(content);
+                                        mediaInstance.getController().jumpTo(customIdx);
+                                        break;
+                                    } catch (Exception ignored) {
+                                        System.out.println("Not index");
+                                        mediaInstance.play(content, textChannel);
+
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
+                                    }
+                                    break;
+                                } else {
+                                    react(":x:");
+                                    return;
+                                }
+                            case "remove":
+                                try {
+                                    int i;
+                                    if (!content.equals("") && (i = Integer.parseInt(content)) >= 0) {
+                                        mediaInstance.getController().remove(i);
+                                        break;
+                                    } else {
+                                        react(":x:");
+                                        return;
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    react(":x:");
+                                    return;
+                                }
+                            case "setVol":
+                                try {
+                                    int vol;
+                                    if (!content.equals("") && (vol = Integer.parseInt(content)) > 0) {
+                                        mediaInstance.getController().setVolume(vol);
+                                        break;
+                                    } else {
+                                        react(":x:");
+                                        return;
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    react(":x:");
+                                    return;
+                                }
+                            case "stop":
+                                mediaInstance.getController().stop();
                                 break;
-                            } catch (Exception ignored){
-                                System.out.println("Not index");
-                            }
-                            mediaPlayer.play(content, textChannel);
-                            break;
-                        } else {
-                            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
-                            return;
-                        }
-                    case "remove":
-                        try {
-                            int i;
-                            if (!content.equals("") && (i = Integer.parseInt(content)) >= 0) {
-                                mediaPlayer.getController().remove(i);
+                            case "next":
+                                mediaInstance.getController().nextTrack();
                                 break;
-                            } else {
-                                textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                            case "loopOne":
+                                mediaInstance.getController().setLoopOne();
+                                break;
+                            case "loopAll":
+                                mediaInstance.getController().setLoopAll();
+                                break;
+                            case "loopOff":
+                                mediaInstance.getController().setLoopOff();
+                                break;
+                            case "clear":
+                                mediaInstance.getController().clear();
+                                break;
+                            case "queue":
+                                mediaInstance.getController().getQueue();
+                                break;
+                            default:
+                                react(":x:");
                                 return;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
-                            return;
                         }
-                    case "setVol":
-                        try {
-                            int vol;
-                            if (!content.equals("") && (vol = Integer.parseInt(content)) > 0) {
-                                mediaPlayer.getController().setVolume(vol);
-                                break;
-                            } else {
-                                textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
-                                return;
-                            }
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
-                            return;
-                        }
-                    case "stop":
-                        mediaPlayer.getController().stop();
-                        break;
-                    case "next":
-                        mediaPlayer.getController().nextTrack();
-                        break;
-                    case "loopOne":
-                        mediaPlayer.getController().setLoopOne();
-                        break;
-                    case "loopAll":
-                        mediaPlayer.getController().setLoopAll();
-                        break;
-                    case "loopOff":
-                        mediaPlayer.getController().setLoopOff();
-                        break;
-                    case "clear":
-                        mediaPlayer.getController().clear();
-                        break;
-                    case "queue":
-                        List<AudioTrack> queue = mediaPlayer.getController().getQueue();
-                        for (int i = 0; i < queue.size(); i++) {
-                            AudioTrack audioTrack = queue.get(i);
-                            textChannel.sendMessage(i + ". " + audioTrack.getInfo().title).queue();
-                        }
-                        break;
-                    default:
-                        textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
-                        return;
+                        react(":ok_hand:");
+                    } else {
+                        react(":x:");
+                    }
+
                 }
-                mediaPlayer.getController().setTextChannel(textChannel);
-                textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":ok_hand:")).queue();
-            } else {
-                textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
             }
+        });
+        thread.start();
+    }
+
+    private void react(String input) {
+        if (!event.getAuthor().isBot()) {
+            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(input)).queue();
         }
     }
+
 }
