@@ -73,8 +73,11 @@ public class TrackController extends AudioEventAdapter {
     /**
      * Get all of the audio track in queue
      */
-    public void getQueue() {
-        getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+    public void getQueue(int page) {
+        try {
+            this.textChannel.sendMessage(getPlayingList().get(page - 1)).queue();
+        } catch (Exception ignored) {
+        }
     }
 
     /**
@@ -198,26 +201,48 @@ public class TrackController extends AudioEventAdapter {
     }
 
     private ArrayList<String> getPlayingList() {
-        String output = "```md\n";
+        int i = 0;
+        final String start = "```md\n"
+                + "#PLAYING "
+                + queue.getCurrentIndex()
+                + ". "
+                + queue.getCurrent().getInfo().title
+                + "\n\n";
+
+        StringBuilder output = new StringBuilder(start
+                + "# PAGE "
+                + (i + 1)
+                + "/"
+                + (queue.getSize() / 10 + 1)
+                + " #"
+                + "\n");
+
         ArrayList<AudioTrack> list = queue.getList();
         ArrayList<String> strings = new ArrayList<>();
-
-        for (int i = 0; i < list.size(); i++) {
+        for (; i < list.size(); i++) {
             AudioTrack audioTrack = list.get(i);
-            output = i
-                    + ". < "
-                    + toMin(audioTrack.getInfo().length)
-                    + " > "
-                    + (i == queue.getCurrentIndex() ? " @ " : "   ")
-                    + audioTrack.getInfo().title
-                    + '\n';
+            output.append(i+1)
+                    .append(". < ")
+                    .append(toMin(audioTrack.getInfo().length))
+                    .append(" > ")
+                    .append(i == queue.getCurrentIndex() ? " @ " : "   ")
+                    .append(audioTrack.getInfo().title)
+                    .append('\n');
 
             if (i % 10 == 9) {
-                strings.add(output + "```");
-                output = "```md\n";
+                if (i != list.size() - 1) {
+                    strings.add(output + "\n and " + (list.size() - i) + " more!```");
+                } else strings.add(output + "```");
+                output = new StringBuilder(start
+                        + "# PAGE "
+                        + (i / 10 + 1)
+                        + "/"
+                        + (queue.getSize() / 10 + 1)
+                        + " #"
+                        + "\n");
             }
         }
-        strings.add(output.equals("```md\n") ? "" : output + "```");
+        strings.add(output.toString().equals("```md\n") ? "" : output + "```");
         return strings;
     }
 
@@ -233,16 +258,20 @@ public class TrackController extends AudioEventAdapter {
 
     private void sendMessage() {
         String lastMessageId = MapMessageIDChannel.getBotLastMessageId(textChannel);
-
+        int currentPages = queue.getCurrentIndex() / 10;
         if (lastMessageId != null)
             if (MapMessageIDChannel.editable(textChannel)) {
-                getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+//                getPlayingList().forEach(s ->  this.textChannel.editMessageById(lastMessageId,s).queue());
+                this.textChannel.editMessageById(lastMessageId, getPlayingList().get(currentPages)).queue();
+
             } else {
                 this.textChannel.deleteMessageById(lastMessageId).queue();
-                getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+//                getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+                this.textChannel.sendMessage(getPlayingList().get(currentPages)).queue();
             }
         else {
-            getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+//            getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
+            this.textChannel.sendMessage(getPlayingList().get(currentPages)).queue();
         }
 
     }

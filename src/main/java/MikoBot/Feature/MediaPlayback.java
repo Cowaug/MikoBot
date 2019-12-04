@@ -1,8 +1,8 @@
 package MikoBot.Feature;
 
-import MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
 import MikoBot.Feature.Ultils.MediaPlayer.MapMessageIDChannel;
 import MikoBot.Feature.Ultils.MediaPlayer.MediaInstance;
+import MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
 import MikoBot.Run;
 import com.vdurmont.emoji.EmojiParser;
 import net.dv8tion.jda.api.entities.Member;
@@ -34,9 +34,9 @@ public class MediaPlayback {
 
         String[] message = event.getMessage().getContentDisplay().split("\n");
 
-        MapMessageIDChannel.setCurrentMessageId(textChannel,event.getMessageId());
+        MapMessageIDChannel.setCurrentMessageId(textChannel, event.getMessageId());
         if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(Run.console.getBotId()) && event.getMessage().getContentDisplay().startsWith("```")) {
-            MapMessageIDChannel.setBotLastMessageId(textChannel,event.getMessageId());
+            MapMessageIDChannel.setBotLastMessageId(textChannel, event.getMessageId());
         }
 
         Thread thread = new Thread(new Runnable() {
@@ -64,7 +64,7 @@ public class MediaPlayback {
                                 if (!content.equals("")) {
                                     try {
                                         int customIdx = Integer.parseInt(content);
-                                        mediaInstance.getController().jumpTo(customIdx);
+                                        mediaInstance.getController().jumpTo(customIdx - 1);
                                         break;
                                     } catch (Exception ignored) {
                                         System.out.println("Not index");
@@ -130,8 +130,24 @@ public class MediaPlayback {
                                 mediaInstance.getController().clear();
                                 break;
                             case "queue":
-                                mediaInstance.getController().getQueue();
-                                break;
+                                try {
+                                    int page;
+                                    System.out.println(content);
+                                    if (content.equals("")) {
+                                        mediaInstance.getController().getQueue(0);
+                                        break;
+                                    } else if ((page = Integer.parseInt(content)) > 0) {
+                                        mediaInstance.getController().getQueue(page - 1);
+                                        break;
+                                    } else {
+                                        react(":x:");
+                                        return;
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                    react(":x:");
+                                    return;
+                                }
                             default:
                                 react(":x:");
                                 return;
@@ -148,6 +164,7 @@ public class MediaPlayback {
     }
 
     private void react(String input) {
+
         if (!event.getAuthor().isBot()) {
             textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(input)).queue();
         }

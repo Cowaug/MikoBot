@@ -24,7 +24,6 @@ public class MapMessageIDChannel {
         return tmp.getBotLastMessageId();
     }
 
-
     /**
      * Check if last message was sent by bot or user
      *
