@@ -138,7 +138,7 @@ public class TextToSpeech {
         try {
             mediaInstance.play(url + URLEncoder.encode(text, "UTF-8"), null);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         }
     }
 
@@ -175,14 +175,14 @@ public class TextToSpeech {
                 bufferedWriter.write(s + "\n");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         } finally {
             try {
                 assert bufferedWriter != null;
                 bufferedWriter.close();
                 writer.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -207,14 +207,14 @@ public class TextToSpeech {
             }
             return arrayList;
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         } finally {
             try {
                 assert bufferedReader != null;
                 bufferedReader.close();
                 reader.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         }
         return arrayList;
