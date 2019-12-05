@@ -68,14 +68,14 @@ public class Slang {
                 bufferedWriter.write(w.getSlang() + SPLITTER + w.getFormal() + "\n");
             }
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         } finally {
             try {
                 assert bufferedWriter != null;
                 bufferedWriter.close();
                 writer.close();
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         }
     }
@@ -98,7 +98,7 @@ public class Slang {
             }
 
         } catch (IOException e) {
-            e.printStackTrace();
+            System.out.println(e.getMessage());
         } finally {
             try {
                 assert bufferedReader != null;
@@ -106,7 +106,7 @@ public class Slang {
                 reader.close();
 
             } catch (IOException e) {
-                e.printStackTrace();
+                System.out.println(e.getMessage());
             }
         }
     }
