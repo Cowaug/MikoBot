@@ -83,7 +83,7 @@ public class TrackController extends AudioEventAdapter {
      * Force the player to play the next track
      * Playing the null track will stop the player
      */
-    public void nextTrack() {
+    public void nextTrack(boolean notify) {
         if (loopOne) {
             player.startTrack(queue.getCurrent(), false);
         } else if (loopAll) {
@@ -95,8 +95,7 @@ public class TrackController extends AudioEventAdapter {
                 lock = false;
             } else player.startTrack(audioTrack, false);
         }
-        sendMessage(oldPage);
-
+        if(notify) sendMessage(oldPage);
     }
 
     /**
@@ -181,7 +180,9 @@ public class TrackController extends AudioEventAdapter {
      * @param i position of track in queue
      */
     public void remove(int i) {
+        if(i==queue.getCurrentIndex()) nextTrack(false);
         queue.remove(i);
+        sendMessage(oldPage);
     }
 
     /**
@@ -198,7 +199,7 @@ public class TrackController extends AudioEventAdapter {
         // Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
         if (endReason.mayStartNext) {
             oldPage = queue.getCurrentIndex() / 10;
-            nextTrack();
+            nextTrack(true);
         }
     }
 

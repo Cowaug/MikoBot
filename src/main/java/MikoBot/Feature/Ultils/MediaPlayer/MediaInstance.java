@@ -93,17 +93,18 @@ public class MediaInstance {
 
             @Override
             public void playlistLoaded(AudioPlaylist playlist) {
-                    controller.queueList(playlist);
+                controller.queueList(playlist);
             }
-
             @Override
             public void noMatches() {
-                if (textChannel != null) textChannel.sendMessage("Nothing match: " + url).queue();
+                if (url.contains("&list=")) play(url.substring(0,url.indexOf("&list=")), textChannel);
+                else if (textChannel != null) textChannel.sendMessage("Nothing match: " + url).queue();
             }
 
             @Override
             public void loadFailed(FriendlyException throwable) {
-                if (textChannel != null) textChannel.sendMessage("Load " + url + " failed").queue();
+                if (url.contains("&list=")) play(url.substring(0,url.indexOf("&list=")), textChannel);
+                else if (textChannel != null) textChannel.sendMessage("Nothing match: " + url).queue();
             }
         });
     }

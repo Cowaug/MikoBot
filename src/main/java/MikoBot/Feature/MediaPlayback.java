@@ -81,8 +81,8 @@ public class MediaPlayback {
                             case "remove":
                                 try {
                                     int i;
-                                    if (!content.equals("") && (i = Integer.parseInt(content)) >= 0) {
-                                        mediaInstance.getController().remove(i);
+                                    if (!content.equals("") && (i = Integer.parseInt(content)) > 0) {
+                                        mediaInstance.getController().remove(i - 1);
                                         break;
                                     } else {
                                         react(":x:");
@@ -112,7 +112,7 @@ public class MediaPlayback {
                                 mediaInstance.getController().stop();
                                 break;
                             case "next":
-                                mediaInstance.getController().nextTrack();
+                                mediaInstance.getController().nextTrack(true);
                                 break;
                             case "loopOne":
                                 mediaInstance.getController().setLoopOne();

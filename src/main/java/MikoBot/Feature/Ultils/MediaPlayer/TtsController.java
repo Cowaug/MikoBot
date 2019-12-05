@@ -27,7 +27,7 @@ public class TtsController extends TrackController{
     }
 
     @Override
-    public void nextTrack() {
+    public void nextTrack(boolean notify) {
         player.startTrack(queue.pull(),false);
     }
 }

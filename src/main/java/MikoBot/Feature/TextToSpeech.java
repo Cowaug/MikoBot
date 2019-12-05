@@ -100,7 +100,7 @@ public class TextToSpeech {
                     save(autoTTSDelete, "autoTTSDelete.txt");
                     break;
                 case "skip":
-                    MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack();
+                    MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack(false);
                     break;
                 default:
                     textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
