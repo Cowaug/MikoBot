@@ -16,6 +16,7 @@ public class TrackController extends AudioEventAdapter {
     private boolean loopAll = false;
     private TextChannel textChannel = null;
     private boolean lock = false;
+    private int oldPage = 0;
 
 
     /**
@@ -43,7 +44,7 @@ public class TrackController extends AudioEventAdapter {
             lock = true;
             player.startTrack(queue.getNext(), false);
         }
-        sendMessage();
+        sendMessage(oldPage);
     }
 
     public void queueList(AudioPlaylist audioPlaylist) {
@@ -54,7 +55,7 @@ public class TrackController extends AudioEventAdapter {
             lock = true;
             player.startTrack(queue.getNext(), false);
         }
-        sendMessage();
+        sendMessage(oldPage);
 
     }
 
@@ -66,7 +67,7 @@ public class TrackController extends AudioEventAdapter {
             lock = true;
             player.startTrack(queue.getNext(), false);
         }
-        sendMessage();
+        sendMessage(oldPage);
 
     }
 
@@ -74,10 +75,8 @@ public class TrackController extends AudioEventAdapter {
      * Get all of the audio track in queue
      */
     public void getQueue(int page) {
-        try {
-            this.textChannel.sendMessage(getPlayingList().get(page - 1)).queue();
-        } catch (Exception ignored) {
-        }
+        if (page == -1) sendMessage(queue.getCurrentIndex() / 10);
+        else sendMessage(page);
     }
 
     /**
@@ -96,7 +95,7 @@ public class TrackController extends AudioEventAdapter {
                 lock = false;
             } else player.startTrack(audioTrack, false);
         }
-        sendMessage();
+        sendMessage(oldPage);
 
     }
 
@@ -107,8 +106,7 @@ public class TrackController extends AudioEventAdapter {
      */
     public void jumpTo(int newIdx) {
         player.startTrack(queue.get(newIdx), false);
-        sendMessage();
-
+        sendMessage(oldPage);
     }
 
     /**
@@ -117,6 +115,7 @@ public class TrackController extends AudioEventAdapter {
     public void setLoopOne() {
         loopOne = true;
         loopAll = false;
+        sendMessage(oldPage);
     }
 
     /**
@@ -125,6 +124,7 @@ public class TrackController extends AudioEventAdapter {
     public void setLoopAll() {
         loopOne = false;
         loopAll = true;
+        sendMessage(oldPage);
     }
 
     /**
@@ -133,6 +133,7 @@ public class TrackController extends AudioEventAdapter {
     public void setLoopOff() {
         loopAll = false;
         loopOne = false;
+        sendMessage(oldPage);
     }
 
     /**
@@ -196,22 +197,24 @@ public class TrackController extends AudioEventAdapter {
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         // Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
         if (endReason.mayStartNext) {
+            oldPage = queue.getCurrentIndex() / 10 + 2;
             nextTrack();
         }
     }
 
     private ArrayList<String> getPlayingList() {
         int i = 0;
-        final String start = "```md\n"
-                + "#PLAYING "
-                + queue.getCurrentIndex() + 1
+        final String start = ">>> ```fix\n"
+                + (loopAll ? "Loop All Song\n" : loopOne ? "Loop Current Song\n" : "Loop Off\n")
+                + "PLAYING = "
+                + (queue.getCurrentIndex() + 1)
                 + ". "
                 + queue.getCurrent().getInfo().title
-                + "\n\n";
+                + "```\n```md\n";
 
         StringBuilder output = new StringBuilder(start
                 + "# PAGE "
-                + (i + 1)
+                + (i / 10 + 1)
                 + "/"
                 + (queue.getSize() / 10 + 1)
                 + " #"
@@ -221,21 +224,25 @@ public class TrackController extends AudioEventAdapter {
         ArrayList<String> strings = new ArrayList<>();
         for (; i < list.size(); i++) {
             AudioTrack audioTrack = list.get(i);
-            output.append(i+1)
-                    .append(". < ")
+            output.append(i + 1)
+                    .append(".")
+                    .append((i + 1 <= 9) ? " " : "")
+                    .append(" < ")
                     .append(toMin(audioTrack.getInfo().length))
                     .append(" > ")
-                    .append(i == queue.getCurrentIndex() ? " @ " : "   ")
+                    .append(i == queue.getCurrentIndex() ? "* " : "  ")
                     .append(audioTrack.getInfo().title)
+                    .append(i == queue.getCurrentIndex() ? " *" : "  ")
                     .append('\n');
 
             if (i % 10 == 9) {
                 if (i != list.size() - 1) {
                     strings.add(output + "\n and " + (list.size() - i) + " more!```");
                 } else strings.add(output + "```");
+
                 output = new StringBuilder(start
                         + "# PAGE "
-                        + (i / 10 + 1)
+                        + (i / 10 + 2)
                         + "/"
                         + (queue.getSize() / 10 + 1)
                         + " #"
@@ -256,23 +263,26 @@ public class TrackController extends AudioEventAdapter {
         else return ret;
     }
 
-    private void sendMessage() {
-        String lastMessageId = MapMessageIDChannel.getBotLastMessageId(textChannel);
-        int currentPages = queue.getCurrentIndex() / 10;
-        if (lastMessageId != null)
-            if (MapMessageIDChannel.editable(textChannel)) {
+    private void sendMessage(int page) {
+        try {
+            String lastMessageId = MapMessageIDChannel.getBotLastMessageId(textChannel);
+            if (lastMessageId != null)
+                if (MapMessageIDChannel.editable(textChannel)) {
 //                getPlayingList().forEach(s ->  this.textChannel.editMessageById(lastMessageId,s).queue());
-                this.textChannel.editMessageById(lastMessageId, getPlayingList().get(currentPages)).queue();
+                    this.textChannel.editMessageById(lastMessageId, getPlayingList().get(page)).queue();
 
-            } else {
-                this.textChannel.deleteMessageById(lastMessageId).queue();
+                } else {
+                    this.textChannel.deleteMessageById(lastMessageId).queue();
 //                getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
-                this.textChannel.sendMessage(getPlayingList().get(currentPages)).queue();
-            }
-        else {
+                    this.textChannel.sendMessage(getPlayingList().get(page)).queue();
+                }
+            else {
 //            getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
-            this.textChannel.sendMessage(getPlayingList().get(currentPages)).queue();
-        }
+                this.textChannel.sendMessage(getPlayingList().get(page)).queue();
+            }
+            oldPage = page;
+        } catch (IndexOutOfBoundsException ignored) {
 
+        }
     }
 }

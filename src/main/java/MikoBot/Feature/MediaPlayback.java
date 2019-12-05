@@ -35,7 +35,7 @@ public class MediaPlayback {
         String[] message = event.getMessage().getContentDisplay().split("\n");
 
         MapMessageIDChannel.setCurrentMessageId(textChannel, event.getMessageId());
-        if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(Run.console.getBotId()) && event.getMessage().getContentDisplay().startsWith("```")) {
+        if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(Run.console.getBotId()) && event.getMessage().getContentDisplay().startsWith(">>> ```")) {
             MapMessageIDChannel.setBotLastMessageId(textChannel, event.getMessageId());
         }
 
@@ -126,14 +126,15 @@ public class MediaPlayback {
                             case "clear":
                                 mediaInstance.getController().clear();
                                 break;
+                            case "page":
                             case "queue":
                                 try {
                                     int page;
                                     if (content.equals("")) {
-                                        mediaInstance.getController().getQueue(0);
+                                        mediaInstance.getController().getQueue(-1);
                                         break;
                                     } else if ((page = Integer.parseInt(content)) > 0) {
-                                        mediaInstance.getController().getQueue(page);
+                                        mediaInstance.getController().getQueue(page - 1);
                                         break;
                                     } else {
                                         react(":x:");
