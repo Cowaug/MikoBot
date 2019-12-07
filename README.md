@@ -11,4 +11,4 @@ Cross-platform, multi-function Discord bot.
 [lavaplayer](https://github.com/sedmelluq/lavaplayer)
 
 ## License
-Released under the []() license.
+Released under the [Apache License 2.0](https://choosealicense.com/licenses/apache-2.0/) license.
