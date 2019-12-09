@@ -8,7 +8,7 @@
 
 <AnchorPane xmlns="http://javafx.com/javafx"
             xmlns:fx="http://javafx.com/fxml"
-            fx:controller="MikoBot.Controller.BotControllTab"
+            fx:controller="com.ebot.MikoBot.Controller.BotControllTab"
             prefHeight="400.0" prefWidth="600.0">
 
 
