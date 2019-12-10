@@ -42,7 +42,7 @@ public class TextToSpeech {
     /**
      * Start the TTS process
      *
-     * @param event  The message event that need to be spoken
+     * @param event The message event that need to be spoken
      */
     public void start(MessageReceivedEvent event) {
         Member member = event.getMember();
@@ -74,72 +74,77 @@ public class TextToSpeech {
             String cmd = getCmd(content);
             content = content.replaceFirst(cmd, "");
             MediaInstance mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
-            switch (cmd) {
-                case ",":
-                    textChannel.deleteMessageById(messageId).queue();
-                    GoogleTranslate(mediaInstance, content);
-                    return;
-                case ".":
-                    GoogleTranslate(mediaInstance, content);
-                    return;
-                case "lockme":
-                    if (!autoTTS.contains(memberId)) autoTTS.add(memberId);
-                    save(autoTTS, "autoTTS.txt");
-                    break;
-                case "unlockme":
-                    autoTTS.remove(memberId);
-                    save(autoTTS, "autoTTS.txt");
-                    break;
-                case "add":
-                    if (!content.equals("")) {
-                        String[] str = {null, null};
-                        try {
-                            str[0] = content.substring(0, content.indexOf(" "));
-                            str[1] = content.substring(content.indexOf(" "));
 
-                            assert !str[0].equals("");
-                            assert !str[1].equals("");
 
-                            Slang.addSlang(str[0],str[1]);
-                            break;
-                        } catch (Exception ex) {
-                            System.out.println(ex.getMessage());
+                switch (cmd) {
+                    case ",":
+                        textChannel.deleteMessageById(messageId).queue();
+                        GoogleTranslate(mediaInstance, content);
+                        return;
+                    case ".":
+                        GoogleTranslate(mediaInstance, content);
+                        return;
+                    case "lockme":
+                        if (!autoTTS.contains(memberId)) {
+                            autoTTS.add(memberId);
+                            save(autoTTS, "autoTTS.txt");
                         }
-                    } else {
-                        textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                        break;
+                    case "unlockme":
+                        autoTTS.remove(memberId);
+                        save(autoTTS, "autoTTS.txt");
+                        break;
+                    case "add":
+                        if (!content.equals("")) {
+                            String[] str = {null, null};
+
+                            str[0] = content.substring(0, content.indexOf(" "));
+                            str[1] = content.substring(content.indexOf(" ") + 1);
+
+                            if (str[0].equals("") || str[1].equals("")) return;
+
+                            Slang.addSlang(str[0], str[1]);
+                            break;
+
+                        } else {
+                            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                            return;
+                        }
+                    case "remove": {
+                        if (!content.equals("")) {
+                            Slang.removeSlang(content.replace(" ",""));
+                            break;
+                        } else {
+                            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                            return;
+                        }
                     }
-                    break;
-                case "remove":{
-                    if (!content.equals("")) {
-                        Slang.removeSlang(content);
-                    } else {
+                    case "delete":
+                        if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
+                        save(autoTTSDelete, "autoTTSDelete.txt");
+                        break;
+                    case "keep":
+                        autoTTSDelete.remove(memberId);
+                        save(autoTTSDelete, "autoTTSDelete.txt");
+                        break;
+                    case "list":
+                        Slang.list(textChannel);
+                        break;
+                    case "shutdown_":
+                        MainClass.console.shutDown();
+                        break;
+                    case "skip":
+                        MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack(false);
+                        break;
+                    case "leave":
+                        mediaInstance.disconnect();
+                        break;
+                    default:
                         textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
-                    }
-                    break;
+                        return;
                 }
-                case "delete":
-                    if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
-                    save(autoTTSDelete, "autoTTSDelete.txt");
-                    break;
-                case "keep":
-                    autoTTSDelete.remove(memberId);
-                    save(autoTTSDelete, "autoTTSDelete.txt");
-                    break;
-                case "shutdown_":
-                    MainClass.console.shutDown();
-                    break;
-                case "skip":
-                    MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack(false);
-                    break;
-                case "leave":
-                    mediaInstance.disconnect();
-                    break;
-                default:
-                    textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
-                    return;
-                //HelpAndConfig.printWarning(textChannel, member, "Unknown command");
-            }
-            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":ok_hand:")).queue();
+                textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":ok_hand:")).queue();
+
         } else {
             if (!autoIgnore) textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
         }

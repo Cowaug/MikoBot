@@ -56,89 +56,91 @@ public class MediaPlayback {
                     mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
                     mediaInstance.getController().setTextChannel(textChannel);
 
-                    switch (cmd) {
-                        case "play":
-                            if (!content.equals("")) {
-                                try {
-                                    int customIdx = Integer.parseInt(content);
-                                    mediaInstance.getController().jumpTo(customIdx - 1);
-                                    break;
-                                } catch (Exception ignored) {
-                                    mediaInstance.play(content, textChannel);
+                    try{
+                        switch (cmd) {
+                            case "play":
+                                if (!content.equals("")) {
                                     try {
-                                        Thread.sleep(1000);
-                                    } catch (InterruptedException e) {
-                                        e.printStackTrace();
+                                        int customIdx = Integer.parseInt(content);
+                                        mediaInstance.getController().jumpTo(customIdx - 1);
+                                        break;
+                                    } catch (Exception ignored) {
+                                        mediaInstance.play(content, textChannel);
+                                        try {
+                                            Thread.sleep(1000);
+                                        } catch (InterruptedException e) {
+                                            e.printStackTrace();
+                                        }
                                     }
+                                    break;
+                                } else {
+                                    react(":x:");
+                                    return;
+                                }
+                            case "remove":
+
+                                int i;
+                                if (!content.equals("")) {
+                                    if ((i = Integer.parseInt(content)) > 0)
+                                        mediaInstance.getController().remove(i - 1);
+                                    break;
+                                } else {
+                                    react(":x:");
+                                    return;
+                                }
+
+                            case "setVol":
+                                int vol;
+                                if (!content.equals("")) {
+                                    if ((vol = Integer.parseInt(content)) > 0)
+                                        mediaInstance.getController().setVolume(vol);
+                                    break;
+                                } else {
+                                    react(":x:");
+                                    return;
+                                }
+                            case "stop":
+                                mediaInstance.getController().stop();
+                                break;
+                            case "next":
+                                mediaInstance.getController().nextTrack(true);
+                                break;
+                            case "loopOne":
+                                mediaInstance.getController().setLoopOne();
+                                break;
+                            case "loopAll":
+                                mediaInstance.getController().setLoopAll();
+                                break;
+                            case "loopOff":
+                                mediaInstance.getController().setLoopOff();
+                                break;
+                            case "clear":
+                                mediaInstance.getController().clear();
+                                break;
+                            case "pause":
+                                mediaInstance.getController().pause();
+                                break;
+                            case "resume":
+                                mediaInstance.getController().resume();
+                                break;
+                            case "leave":
+                                mediaInstance.disconnect();
+                                break;
+                            case "join":
+                                try {
+                                    mediaInstance.reconnect(voiceChannel);
+                                } catch (Exception ex) {
+                                    System.out.println(ex.getMessage());
+                                    react(":x:");
+                                    return;
                                 }
                                 break;
-                            } else {
-                                react(":x:");
-                                return;
-                            }
-                        case "remove":
-                            try {
-                                int i;
-                                if (!content.equals("") && (i = Integer.parseInt(content)) > 0) {
-                                    mediaInstance.getController().remove(i - 1);
-                                    break;
-                                } else {
-                                    react(":x:");
-                                    return;
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                react(":x:");
-                                return;
-                            }
-                        case "setVol":
-                            try {
-                                int vol;
-                                if (!content.equals("") && (vol = Integer.parseInt(content)) > 0) {
-                                    mediaInstance.getController().setVolume(vol);
-                                    break;
-                                } else {
-                                    react(":x:");
-                                    return;
-                                }
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                                react(":x:");
-                                return;
-                            }
-                        case "stop":
-                            mediaInstance.getController().stop();
-                            break;
-                        case "next":
-                            mediaInstance.getController().nextTrack(true);
-                            break;
-                        case "loopOne":
-                            mediaInstance.getController().setLoopOne();
-                            break;
-                        case "loopAll":
-                            mediaInstance.getController().setLoopAll();
-                            break;
-                        case "loopOff":
-                            mediaInstance.getController().setLoopOff();
-                            break;
-                        case "clear":
-                            mediaInstance.getController().clear();
-                            break;
-                        case "pause":
-                            mediaInstance.getController().pause();
-                            break;
-                        case "resume":
-                            mediaInstance.getController().resume();
-                            break;
-                        case "leave":
-                            mediaInstance.disconnect();
-                            break;
-                        case "shutdown_":
-                            MainClass.console.shutDown();
-                            break;
-                        case "page":
-                        case "queue":
-                            try {
+                            case "shutdown_":
+                                MainClass.console.shutDown();
+                                break;
+                            case "page":
+                            case "queue":
+
                                 int page;
                                 if (content.equals("")) {
                                     mediaInstance.getController().getQueue(-1);
@@ -150,16 +152,20 @@ public class MediaPlayback {
                                     react(":x:");
                                     return;
                                 }
-                            } catch (Exception e) {
-                                e.printStackTrace();
+
+                            default:
                                 react(":x:");
                                 return;
-                            }
-                        default:
-                            react(":x:");
-                            return;
+                        }
+                        react(":ok_hand:");
+                        mediaInstance.getController().update();
                     }
-                    react(":ok_hand:");
+                    catch (Exception ex){
+                        System.out.println(ex.getMessage());
+                        react(":boom:");
+                        return;
+                    }
+
                 } else {
                     react(":x:");
                 }

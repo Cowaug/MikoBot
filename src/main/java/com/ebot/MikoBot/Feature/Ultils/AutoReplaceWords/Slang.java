@@ -1,5 +1,7 @@
 package com.ebot.MikoBot.Feature.Ultils.AutoReplaceWords;
 
+import net.dv8tion.jda.api.entities.TextChannel;
+
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
@@ -48,9 +50,12 @@ public class Slang {
      * @param slang Slang need to be removed
      */
     public static void removeSlang(String slang) {
-        for (WordPair w : words) {
-            if (w.getSlang().equals(slang)) words.remove(w);
-            break;
+        for (int i = 0; i < words.size(); i++) {
+            WordPair w = words.get(i);
+            if (w.getSlang().equals(slang)) {
+                words.remove(i);
+                break;
+            }
         }
         save();
     }
@@ -110,6 +115,18 @@ public class Slang {
 
             }
         }
+    }
+
+    public static void list(TextChannel textChannel) {
+        if (words == null) {
+            words = new ArrayList<>();
+            load();
+        }
+        StringBuilder output = new StringBuilder(">>> ");
+        for (WordPair wordPair : words) {
+            output.append(wordPair.getSlang()).append("\t").append(wordPair.getFormal()).append("\n");
+        }
+        textChannel.sendMessage(output).queue();
     }
 }
 

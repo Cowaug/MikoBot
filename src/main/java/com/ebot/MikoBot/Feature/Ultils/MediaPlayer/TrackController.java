@@ -56,7 +56,6 @@ public class TrackController extends AudioEventAdapter {
             player.startTrack(queue.getNext(), false);
         }
         sendMessage(oldPage);
-
     }
 
     /**
@@ -196,7 +195,8 @@ public class TrackController extends AudioEventAdapter {
     private ArrayList<String> getPlayingList() {
         int i = 0;
         final String start = ">>> ```fix\n"
-                + (loopAll ? "Loop All Song\n" : loopOne ? "Loop Current Song\n" : "Loop Off\n")
+                + (loopAll ? "Loop All Song | " : loopOne ? "Loop Current Song | " : "Loop Off | ")
+                + ("Volume: "+ player.getVolume() +" (default: 25)\n")
                 + "PLAYING = "
                 + (queue.getCurrentIndex() + 1)
                 + ". "
@@ -275,5 +275,9 @@ public class TrackController extends AudioEventAdapter {
         } catch (IndexOutOfBoundsException ignored) {
 
         }
+    }
+
+    public void update(){
+        sendMessage(oldPage);
     }
 }

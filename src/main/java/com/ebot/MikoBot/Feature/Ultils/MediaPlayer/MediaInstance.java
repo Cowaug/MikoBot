@@ -63,7 +63,7 @@ public class MediaInstance {
      *
      * @param voiceChannel Voice channel to connect
      */
-    void reconnect(VoiceChannel voiceChannel) {
+    public void reconnect(VoiceChannel voiceChannel) {
         audioManager.openAudioConnection(voiceChannel);
     }
 
