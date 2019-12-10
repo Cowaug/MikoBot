@@ -92,8 +92,9 @@ public class MediaPlayback {
                             case "setVol":
                                 int vol;
                                 if (!content.equals("")) {
-                                    if ((vol = Integer.parseInt(content)) > 0)
+                                    if ((vol = Integer.parseInt(content)) > 0){
                                         mediaInstance.getController().setVolume(vol);
+                                    }
                                     break;
                                 } else {
                                     react(":x:");
@@ -158,7 +159,6 @@ public class MediaPlayback {
                                 return;
                         }
                         react(":ok_hand:");
-                        mediaInstance.getController().update();
                     }
                     catch (Exception ex){
                         System.out.println(ex.getMessage());

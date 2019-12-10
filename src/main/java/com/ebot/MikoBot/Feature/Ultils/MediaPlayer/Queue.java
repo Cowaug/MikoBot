@@ -17,8 +17,9 @@ class Queue {
         currentIndex++;
         if (currentIndex < audioTracks.size())
             return audioTracks.get(currentIndex).makeClone();
-
-        currentIndex = audioTracks.size();
+        if (audioTracks.size() == 0)
+            currentIndex = -1;
+        else currentIndex = audioTracks.size();
         return null;
     }
 
@@ -61,11 +62,11 @@ class Queue {
         return audioTracks;
     }
 
-    int getCurrentIndex(){
+    int getCurrentIndex() {
         return currentIndex;
     }
 
-    int getSize(){
+    int getSize() {
         return audioTracks.size();
     }
 }
