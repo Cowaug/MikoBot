@@ -59,18 +59,6 @@ public class TrackController extends AudioEventAdapter {
 
     }
 
-    public void queueList(ArrayList<AudioTrack> audioPlaylist) {
-        for (AudioTrack track : audioPlaylist) {
-            queue.add(track);
-        }
-        if (!lock && player.getPlayingTrack() == null) {
-            lock = true;
-            player.startTrack(queue.getNext(), false);
-        }
-        sendMessage(oldPage);
-
-    }
-
     /**
      * Get all of the audio track in queue
      */

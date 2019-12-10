@@ -21,14 +21,9 @@ public class TextToSpeech {
     private static final String EN = "en";
     private static final String VN = "vi";
     private static final String JP = "ja";
-    public static final String GOOGLE_TRANSLATE = "gt";
-
-    public static String TTS_PREFIX = ".";
-    public static String IGNORE_PREFIX = "`";
 
     private ArrayList<String> autoTTS;
     private ArrayList<String> autoTTSDelete;
-    private boolean autoIgnore = true;
 
     /**
      * Load the list of user whom prefer
@@ -48,15 +43,19 @@ public class TextToSpeech {
      * Start the TTS process
      *
      * @param event  The message event that need to be spoken
-     * @param engine Engine of TTS (currently just google translate
      */
-    public void start(MessageReceivedEvent event, String engine) {
+    public void start(MessageReceivedEvent event) {
         Member member = event.getMember();
         assert member != null;
         String memberId = member.getId();
         TextChannel textChannel = event.getTextChannel();
         String messageId = event.getMessageId();
         String content = event.getMessage().getContentDisplay();
+
+        boolean autoIgnore;
+
+        String TTS_PREFIX = ".";
+        String IGNORE_PREFIX = "`";
 
         if (content.startsWith(TTS_PREFIX)) {
             autoIgnore = false;
@@ -91,6 +90,33 @@ public class TextToSpeech {
                     autoTTS.remove(memberId);
                     save(autoTTS, "autoTTS.txt");
                     break;
+                case "add":
+                    if (!content.equals("")) {
+                        String[] str = {null, null};
+                        try {
+                            str[0] = content.substring(0, content.indexOf(" "));
+                            str[1] = content.substring(content.indexOf(" "));
+
+                            assert !str[0].equals("");
+                            assert !str[1].equals("");
+
+                            Slang.addSlang(str[0],str[1]);
+                            break;
+                        } catch (Exception ex) {
+                            System.out.println(ex.getMessage());
+                        }
+                    } else {
+                        textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                    }
+                    break;
+                case "remove":{
+                    if (!content.equals("")) {
+                        Slang.removeSlang(content);
+                    } else {
+                        textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                    }
+                    break;
+                }
                 case "delete":
                     if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
                     save(autoTTSDelete, "autoTTSDelete.txt");
@@ -104,6 +130,9 @@ public class TextToSpeech {
                     break;
                 case "skip":
                     MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack(false);
+                    break;
+                case "leave":
+                    mediaInstance.disconnect();
                     break;
                 default:
                     textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();

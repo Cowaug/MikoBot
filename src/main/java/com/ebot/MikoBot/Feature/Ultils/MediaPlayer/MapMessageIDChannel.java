@@ -18,7 +18,7 @@ public class MapMessageIDChannel {
      * @param textChannel Text channel
      * @return messageId
      */
-    public static String getBotLastMessageId(TextChannel textChannel) {
+    static String getBotLastMessageId(TextChannel textChannel) {
         Mapping tmp = getMapping(textChannel);
         if (tmp == null) return null;
         return tmp.getBotLastMessageId();
@@ -30,7 +30,7 @@ public class MapMessageIDChannel {
      * @param textChannel Text channel
      * @return is the last message was sent by this bot
      */
-    public static boolean editable(TextChannel textChannel) {
+    static boolean editable(TextChannel textChannel) {
         Mapping tmp = getMapping(textChannel);
         if (tmp == null) return false;
         return tmp.editable();
@@ -70,32 +70,28 @@ class Mapping {
     private String botLastMessageId = null;
     private String currentMessageId = null;
 
-    public Mapping(TextChannel textChannel) {
+    Mapping(TextChannel textChannel) {
         this.textChannel = textChannel;
     }
 
-    public void setBotLastMessageId(String messageId) {
+    void setBotLastMessageId(String messageId) {
         botLastMessageId = messageId;
         currentMessageId = messageId;
     }
 
-    public void setCurrentMessageId(String messageId) {
+    void setCurrentMessageId(String messageId) {
         currentMessageId = messageId;
     }
 
-    public String getBotLastMessageId() {
+    String getBotLastMessageId() {
         return botLastMessageId;
     }
 
-    public String getCurrentMessageId() {
-        return currentMessageId;
-    }
-
-    public TextChannel getTextChannel() {
+    TextChannel getTextChannel() {
         return textChannel;
     }
 
-    public boolean editable() {
+    boolean editable() {
         return botLastMessageId.equals(currentMessageId);
     }
 }

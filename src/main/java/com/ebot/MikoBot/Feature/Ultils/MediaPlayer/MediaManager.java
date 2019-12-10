@@ -41,13 +41,6 @@ public class MediaManager {
     private static GuildMediaInstance findGuild(final Guild guild) {
         return mediaManagerList.stream().filter(p -> p.getGuild().equals(guild)).findAny().orElse(null);
     }
-
-    /**
-     * Disconnect all MediaPlayer from it's server
-     */
-    public static void disconnectAll() {
-        mediaManagerList.forEach(p -> p.getMediaInstance().disconnect());
-    }
 }
 
 

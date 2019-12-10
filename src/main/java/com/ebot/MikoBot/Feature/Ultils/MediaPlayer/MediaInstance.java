@@ -70,7 +70,7 @@ public class MediaInstance {
     /**
      * Disconnect voice channel
      */
-    void disconnect() {
+    public void disconnect() {
         audioManager.closeAudioConnection();
     }
 

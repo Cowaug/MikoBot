@@ -10,6 +10,6 @@ public class TTSListener extends MessageListener{
     public void onMessageReceived(MessageReceivedEvent event) {
         super.onMessageReceived(event);
         if(!event.getAuthor().isBot())
-        textToSpeech.start(event,TextToSpeech.GOOGLE_TRANSLATE);
+        textToSpeech.start(event);
     }
 }
