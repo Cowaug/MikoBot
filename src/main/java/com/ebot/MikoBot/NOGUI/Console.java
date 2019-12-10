@@ -10,8 +10,8 @@ public class Console {
      * and add a safety closing mechanism
      */
     public Console(String[] args) {
-        String token=null;
-        String mode=null;
+        String token = null;
+        String mode = null;
         try {
             token = args[0];
             mode = args[1];
@@ -33,5 +33,14 @@ public class Console {
 
     public String getMode() {
         return botInstance.getMode();
+    }
+
+    public void shutDown() {
+        try {
+            botInstance.shutdown();
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
+        System.exit(0);
     }
 }

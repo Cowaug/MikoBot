@@ -47,7 +47,7 @@ public class TrackController extends AudioEventAdapter {
         sendMessage(oldPage);
     }
 
-    public void queueList(AudioPlaylist audioPlaylist) {
+    void queueList(AudioPlaylist audioPlaylist) {
         for (AudioTrack track : audioPlaylist.getTracks()) {
             queue.add(track);
         }
@@ -95,7 +95,10 @@ public class TrackController extends AudioEventAdapter {
                 lock = false;
             } else player.startTrack(audioTrack, false);
         }
-        if(notify) sendMessage(oldPage);
+        if(notify) {
+            oldPage = queue.getCurrentIndex() / 10;
+            sendMessage(oldPage);
+        }
     }
 
     /**
@@ -198,7 +201,6 @@ public class TrackController extends AudioEventAdapter {
     public void onTrackEnd(AudioPlayer player, AudioTrack track, AudioTrackEndReason endReason) {
         // Only start the next track if the end reason is suitable for it (FINISHED or LOAD_FAILED)
         if (endReason.mayStartNext) {
-            oldPage = queue.getCurrentIndex() / 10;
             nextTrack(true);
         }
     }

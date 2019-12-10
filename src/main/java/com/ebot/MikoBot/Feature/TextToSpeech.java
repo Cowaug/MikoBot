@@ -99,6 +99,9 @@ public class TextToSpeech {
                     autoTTSDelete.remove(memberId);
                     save(autoTTSDelete, "autoTTSDelete.txt");
                     break;
+                case "shutdown_":
+                    MainClass.console.shutDown();
+                    break;
                 case "skip":
                     MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack(false);
                     break;

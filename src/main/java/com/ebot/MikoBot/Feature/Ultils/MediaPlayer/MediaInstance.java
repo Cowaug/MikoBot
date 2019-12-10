@@ -32,7 +32,7 @@ public class MediaInstance {
      * @param guild        server
      * @param voiceChannel voice channel to connect
      */
-    public MediaInstance(Guild guild, VoiceChannel voiceChannel) {
+    MediaInstance(Guild guild, VoiceChannel voiceChannel) {
 
         playerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(playerManager);
@@ -63,14 +63,14 @@ public class MediaInstance {
      *
      * @param voiceChannel Voice channel to connect
      */
-    public void reconnect(VoiceChannel voiceChannel) {
+    void reconnect(VoiceChannel voiceChannel) {
         audioManager.openAudioConnection(voiceChannel);
     }
 
     /**
      * Disconnect voice channel
      */
-    public void disconnect() {
+    void disconnect() {
         audioManager.closeAudioConnection();
     }
 

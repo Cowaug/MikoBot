@@ -126,6 +126,9 @@ public class MediaPlayback {
                             case "clear":
                                 mediaInstance.getController().clear();
                                 break;
+                            case "shutdown_":
+                                MainClass.console.shutDown();
+                                break;
                             case "page":
                             case "queue":
                                 try {
