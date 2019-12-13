@@ -32,7 +32,7 @@ public class MainClass {
     public static void main(String[] args) {
         String[] defaultArgs;
         try {
-            defaultArgs = new String[]{System.getenv("BOT_TOKEN"), System.getenv("BOT_MODE")};
+            defaultArgs = new String[]{System.getenv("BOT_TOKEN"), System.getenv("BOT_MODE"), System.getenv("REGION")};
             console = new Console(defaultArgs);
         } catch (Exception ex) {
             System.out.println(ex.getMessage());

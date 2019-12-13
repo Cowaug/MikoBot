@@ -173,7 +173,7 @@ public class TextToSpeech {
 
         String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=" + language + "&q=";
         try {
-            mediaInstance.play(url + URLEncoder.encode(text, "UTF-8"), null);
+            mediaInstance.play(url + URLEncoder.encode(text.replace("@","@ "), "UTF-8"), null);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }

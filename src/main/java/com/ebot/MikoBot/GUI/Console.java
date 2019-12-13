@@ -48,23 +48,23 @@ public class Console extends JFrame {
         startBtn.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                String token=null;
-                String mode=null;
+                String token = null;
+                String mode = null;
+                String region = null;
                 try {
                     token = args[0];
                     mode = args[1];
+                    region = args[2];
                 } catch (Exception ex) {
                     System.out.println(ex.getMessage());
                 }
 
-//                token = "Q"; // TOKEN GOES HERE
-//                mode = "TTS"; // MODE GOES HERE
+//        token = ""; // TOKEN GOES HERE
+//        mode = "TTS"; // MODE GOES HERE
 
-                if (botInstance == null) {
-                    botInstance = new BotInstance(token, mode);
-                    startBtn.setText(mode);
-                    startBtn.setEnabled(false);
-                }
+
+                botInstance = new BotInstance(token, mode,region);
+
 
             }
         });

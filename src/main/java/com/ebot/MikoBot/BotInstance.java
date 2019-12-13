@@ -17,12 +17,14 @@ public class BotInstance {
     private JDA jda;
     private String token;
     private String mode;
+    private String region;
     private MessageListener ttsListener = new TTSListener();
     private MessageListener mediaListener = new MediaListener();
 
-    public BotInstance(String token, String mode) {
+    public BotInstance(String token, String mode, String region) {
         this.token = token;
         this.mode = mode;
+        this.region = region;
         build();
         setMode(mode);
     }
@@ -32,7 +34,7 @@ public class BotInstance {
             jda = new JDABuilder(AccountType.BOT).setToken(token)
                     .setBulkDeleteSplittingEnabled(false)
                     .setCompression(Compression.NONE)
-                    .setActivity(Activity.playing(mode))
+                    .setActivity(Activity.playing(mode + " @" + region))
                     .build();
         } catch (LoginException e) {
             System.out.println(e.getMessage());
@@ -52,7 +54,7 @@ public class BotInstance {
         }
     }
 
-    public String getId(){
+    public String getId() {
         return jda.getSelfUser().getId();
     }
 
@@ -60,7 +62,7 @@ public class BotInstance {
         jda.shutdownNow();
     }
 
-    public String getMode(){
+    public String getMode() {
         return mode;
     }
 

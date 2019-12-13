@@ -12,9 +12,11 @@ public class Console {
     public Console(String[] args) {
         String token = null;
         String mode = null;
+        String region = null;
         try {
             token = args[0];
             mode = args[1];
+            region = args[2];
         } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
@@ -23,7 +25,7 @@ public class Console {
 //        mode = "TTS"; // MODE GOES HERE
 
 
-        botInstance = new BotInstance(token, mode);
+        botInstance = new BotInstance(token, mode,region);
 
     }
 
