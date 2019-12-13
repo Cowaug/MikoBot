@@ -1,4 +1,4 @@
-# com.ebot.MikoBot
+# MikoBot
 
 Cross-platform, multi-function Discord bot.
 
