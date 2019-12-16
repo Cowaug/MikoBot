@@ -15,6 +15,8 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Objects;
 
+import static com.ebot.MikoBot.BotInstance.MUSIC;
+import static com.ebot.MikoBot.BotInstance.TTS;
 import static com.ebot.MikoBot.Feature.MediaPlayback.MEDIA_PREFIX;
 
 public class TextToSpeech {
@@ -73,7 +75,7 @@ public class TextToSpeech {
         if (voiceChannel != null) {
             String cmd = getCmd(content);
             content = content.replaceFirst(cmd, "");
-            MediaInstance mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
+            MediaInstance mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel,TTS);
 
 
                 switch (cmd) {
@@ -130,11 +132,11 @@ public class TextToSpeech {
                     case "list":
                         Slang.list(textChannel);
                         break;
-                    case "shutdown_":
-                        MainClass.console.shutDown();
-                        break;
+//                    case "reboot_":
+//                        MainClass.reboot(TTS);
+//                        break;
                     case "skip":
-                        MediaManager.connectTo(event.getGuild(), voiceChannel).getController().nextTrack(false);
+                        MediaManager.connectTo(event.getGuild(), voiceChannel,TTS).getController().nextTrack(false);
                         break;
                     case "leave":
                         mediaInstance.disconnect();

@@ -1,6 +1,6 @@
 package com.ebot.MikoBot;
 
-import com.ebot.MikoBot.NOGUI.Console;
+
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
@@ -12,7 +12,8 @@ import java.net.URLDecoder;
  */
 public class MainClass {
     public static String PROGRAM_PATH;
-    public static Console console;
+    private static BotInstance musicBot;
+    private static BotInstance ttsBot;
 
     static {
         try {
@@ -30,13 +31,20 @@ public class MainClass {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
-        String[] defaultArgs;
         try {
-            defaultArgs = new String[]{System.getenv("BOT_TOKEN"), System.getenv("BOT_MODE"), System.getenv("REGION")};
-            console = new Console(defaultArgs);
+            new Thread(() -> ttsBot = new BotInstance(System.getenv("TTS_BOT_TOKEN"),BotInstance.TTS,System.getenv("REGION"))).start();
+            new Thread(() -> musicBot = new BotInstance(System.getenv("MUSIC_BOT_TOKEN"),BotInstance.MUSIC,System.getenv("REGION"))).start();
+
         } catch (Exception ex) {
+            //TODO Local run
             System.out.println(ex.getMessage());
-            console = new Console(args);
         }
+    }
+
+    public static void reboot(String mode){
+        if(mode.equals(BotInstance.TTS))
+            ttsBot.restart();
+        else if(mode.equals(BotInstance.MUSIC))
+            musicBot.restart();
     }
 }

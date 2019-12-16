@@ -18,10 +18,11 @@ public class BotInstance {
     private String token;
     private String mode;
     private String region;
-    private MessageListener ttsListener = new TTSListener();
-    private MessageListener mediaListener = new MediaListener();
+    private MessageListener ttsListener = null;
+    private MessageListener mediaListener = null;
 
-    public BotInstance(String token, String mode, String region) {
+    BotInstance(String token, String mode, String region) {
+        System.out.println("CREATING " + mode.toUpperCase() + " BOT...");
         this.token = token;
         this.mode = mode;
         this.region = region;
@@ -35,35 +36,31 @@ public class BotInstance {
                     .setBulkDeleteSplittingEnabled(false)
                     .setCompression(Compression.NONE)
                     .setActivity(Activity.playing(mode + " @" + region))
-                    .build();
+                    .build().awaitReady();
         } catch (LoginException e) {
             System.out.println(e.getMessage());
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
     }
 
-    public void setMode(String mode) {
+    private void setMode(String mode) {
         switch (mode) {
             case MUSIC:
-                jda.removeEventListener(ttsListener);
+                //jda.removeEventListener(ttsListener);
+                if (mediaListener == null) mediaListener = new MediaListener(jda.getSelfUser().getId());
                 jda.addEventListener(mediaListener);
                 break;
             case TTS:
-                jda.removeEventListener(mediaListener);
+                //jda.removeEventListener(mediaListener);
+                if (ttsListener == null) ttsListener = new TTSListener();
                 jda.addEventListener(ttsListener);
                 break;
         }
     }
 
-    public String getId() {
-        return jda.getSelfUser().getId();
-    }
-
-    public void shutdown() {
+    private void shutdown() {
         jda.shutdownNow();
-    }
-
-    public String getMode() {
-        return mode;
     }
 
     public void restart() {

@@ -12,12 +12,20 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Objects;
 
+import static com.ebot.MikoBot.BotInstance.MUSIC;
+import static com.ebot.MikoBot.BotInstance.TTS;
+
 public class MediaPlayback {
     static String MEDIA_PREFIX = "/";
     private TextChannel textChannel;
     private String messageId;
     private MessageReceivedEvent event;
     private MediaInstance mediaInstance;
+    private String BOT_ID;
+
+    public MediaPlayback(String BOT_ID){
+        this.BOT_ID = BOT_ID;
+    }
 
     /**
      * Start the media playback base on user request
@@ -35,7 +43,7 @@ public class MediaPlayback {
         String[] message = event.getMessage().getContentDisplay().split("\n");
 
         MapMessageIDChannel.setCurrentMessageId(textChannel, event.getMessageId());
-        if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(MainClass.console.getBotId()) && event.getMessage().getContentDisplay().startsWith(">>> ```")) {
+        if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(BOT_ID) && event.getMessage().getContentDisplay().startsWith(">>> ```")) {
             MapMessageIDChannel.setBotLastMessageId(textChannel, event.getMessageId());
         }
 
@@ -53,7 +61,7 @@ public class MediaPlayback {
                 VoiceChannel voiceChannel = Objects.requireNonNull(member.getVoiceState()).getChannel();
 
                 if (voiceChannel != null) {
-                    mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel);
+                    mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel,MUSIC);
                     mediaInstance.getController().setTextChannel(textChannel);
 
                     try{
@@ -136,9 +144,9 @@ public class MediaPlayback {
                                     return;
                                 }
                                 break;
-                            case "shutdown_":
-                                MainClass.console.shutDown();
-                                break;
+//                            case "reboot_":
+//                                MainClass.reboot(MUSIC);
+//                                break;
                             case "page":
                             case "queue":
 

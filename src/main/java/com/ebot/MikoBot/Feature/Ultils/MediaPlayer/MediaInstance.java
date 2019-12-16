@@ -32,7 +32,7 @@ public class MediaInstance {
      * @param guild        server
      * @param voiceChannel voice channel to connect
      */
-    MediaInstance(Guild guild, VoiceChannel voiceChannel) {
+    MediaInstance(Guild guild, VoiceChannel voiceChannel,String TYPE) {
 
         playerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(playerManager);
@@ -48,7 +48,7 @@ public class MediaInstance {
 
         AudioPlayer player = playerManager.createPlayer();
 
-        if (MainClass.console.getMode().equals(TTS)) controller = new TtsController(player);
+        if (TYPE.equals(TTS)) controller = new TtsController(player);
         else controller = new TrackController(player);
 
         player.addListener(controller);

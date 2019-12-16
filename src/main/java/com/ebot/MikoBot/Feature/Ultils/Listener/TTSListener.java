@@ -9,6 +9,7 @@ public class TTSListener extends MessageListener{
     @Override
     public void onMessageReceived(MessageReceivedEvent event) {
         super.onMessageReceived(event);
+        System.out.println("TTS");
         if(!event.getAuthor().isBot())
         textToSpeech.start(event);
     }
