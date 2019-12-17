@@ -1,12 +1,11 @@
 package com.ebot.MikoBot.Feature;
 
 import com.ebot.MikoBot.BotInstance;
-import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
 import com.ebot.MikoBot.MainClass;
+import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
 import com.ebot.MikoBot.Ultils.TextChannelManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.io.*;
@@ -15,7 +14,6 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static com.ebot.MikoBot.BotInstance.TTS;
 import static com.ebot.MikoBot.Feature.PlayingMusic.MEDIA_PREFIX;
 import static com.ebot.MikoBot.MainClass.PROGRAM_PATH;
 import static com.ebot.MikoBot.Ultils.TextChannelManager.react;
@@ -34,7 +32,7 @@ public class TextToSpeech {
      * automatic TTS (and delete message afterward)
      */
     public TextToSpeech(BotInstance botInstance) {
-        this.botInstance=botInstance;
+        this.botInstance = botInstance;
         try {
             autoTTS = load("autoTTS.txt");
             autoTTSDelete = load("autoTTSDelete.txt");
@@ -73,84 +71,84 @@ public class TextToSpeech {
                 content = "," + content;
             else content = "." + content;
         } else return;
-        MediaInstance mediaInstance = botInstance.get(event);
 
+        MediaInstance mediaInstance = botInstance.get(event);
         if (mediaInstance != null) {
             String cmd = getCmd(content);
             content = content.replaceFirst(cmd, "");
-                switch (cmd) {
-                    case ",":
-                        textChannel.deleteMessageById(messageId).queue();
-                        GoogleTranslate(event,mediaInstance, content);
-                        return;
-                    case ".":
-                        GoogleTranslate(event,mediaInstance, content);
-                        return;
-                    case "lockme":
-                        if (!autoTTS.contains(memberId)) {
-                            autoTTS.add(memberId);
-                            save(autoTTS, "autoTTS.txt");
-                        }
-                        break;
-                    case "unlockme":
-                        autoTTS.remove(memberId);
+            switch (cmd) {
+                case ",":
+                    textChannel.deleteMessageById(messageId).queue();
+                    GoogleTranslate(event, mediaInstance, content);
+                    return;
+                case ".":
+                    GoogleTranslate(event, mediaInstance, content);
+                    return;
+                case "lockme":
+                    if (!autoTTS.contains(memberId)) {
+                        autoTTS.add(memberId);
                         save(autoTTS, "autoTTS.txt");
-                        break;
-                    case "add":
-                        if (!content.equals("")) {
-                            String[] str = {null, null};
-
-                            str[0] = content.substring(0, content.indexOf(" "));
-                            str[1] = content.substring(content.indexOf(" ") + 1);
-
-                            if (str[0].equals("") || str[1].equals("")) return;
-
-                            Slang.addSlang(str[0], str[1]);
-                            break;
-
-                        } else {
-                            react(event,":x:");
-                            return;
-                        }
-                    case "remove": {
-                        if (!content.equals("")) {
-                            Slang.removeSlang(content.replace(" ",""));
-                            break;
-                        } else {
-                            react(event,":x:");
-                            return;
-                        }
                     }
-                    case "delete":
-                        if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
-                        save(autoTTSDelete, "autoTTSDelete.txt");
+                    break;
+                case "unlockme":
+                    autoTTS.remove(memberId);
+                    save(autoTTS, "autoTTS.txt");
+                    break;
+                case "add":
+                    if (!content.equals("")) {
+                        String[] str = {null, null};
+
+                        str[0] = content.substring(0, content.indexOf(" "));
+                        str[1] = content.substring(content.indexOf(" ") + 1);
+
+                        if (str[0].equals("") || str[1].equals("")) return;
+
+                        Slang.addSlang(str[0], str[1]);
                         break;
-                    case "keep":
-                        autoTTSDelete.remove(memberId);
-                        save(autoTTSDelete, "autoTTSDelete.txt");
+
+                    } else {
+                        react(event, ":x:");
+                        return;
+                    }
+                case "remove": {
+                    if (!content.equals("")) {
+                        Slang.removeSlang(content.replace(" ", ""));
                         break;
-                    case "list":
-                        Slang.list(textChannel);
-                        break;
+                    } else {
+                        react(event, ":x:");
+                        return;
+                    }
+                }
+                case "delete":
+                    if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
+                    save(autoTTSDelete, "autoTTSDelete.txt");
+                    break;
+                case "keep":
+                    autoTTSDelete.remove(memberId);
+                    save(autoTTSDelete, "autoTTSDelete.txt");
+                    break;
+                case "list":
+                    Slang.list(textChannel);
+                    break;
 //                    case "reboot_":
 //                        MainClass.reboot(TTS);
 //                        break;
-                    case "info":
-                        TextChannelManager.updateMessage(botInstance,event,TextChannelManager.getInfoTTS());
-                        break;
-                    case "skip":
-                        mediaInstance.getController().nextTrack(false);
-                        break;
-                    case "leave":
-                        mediaInstance.disconnect();
-                        break;
-                    default:
-                        react(event,":x:");
-                        return;
-                }
-                react(event,":ok_hand:");
+//                case "info":
+//                    TextChannelManager.updateMessage(botInstance, event, TextChannelManager.getInfoTTS());
+//                    break;
+                case "skip":
+                    mediaInstance.getController().nextTrack(false);
+                    break;
+                case "leave":
+                    mediaInstance.disconnect();
+                    break;
+                default:
+                    react(event, ":x:");
+                    return;
+            }
+            react(event, ":ok_hand:");
         } else {
-            if (!autoIgnore) react(event,":x:");
+            if (!autoIgnore) react(event, ":x:");
         }
     }
 
@@ -161,7 +159,7 @@ public class TextToSpeech {
      * @param mediaInstance Server's player
      * @param text          Text user wants to speak
      */
-    private void GoogleTranslate(MessageReceivedEvent event,MediaInstance mediaInstance, String text) {
+    private void GoogleTranslate(MessageReceivedEvent event, MediaInstance mediaInstance, String text) {
         text = Slang.makeFormal(text);
         String language = VN;
         if (text.startsWith(EN + " ")) {
@@ -178,7 +176,7 @@ public class TextToSpeech {
         String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=" + language + "&q=";
         try {
             mediaInstance.reconnect(Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel());
-            mediaInstance.play(url + URLEncoder.encode(text.replace("@","@ "), "UTF-8"), null);
+            mediaInstance.play(url + URLEncoder.encode(text.replace("@", "@ "), "UTF-8"), null);
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
