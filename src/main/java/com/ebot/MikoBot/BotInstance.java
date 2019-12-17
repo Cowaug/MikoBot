@@ -1,15 +1,21 @@
 package com.ebot.MikoBot;
 
-import com.ebot.MikoBot.Feature.Ultils.Listener.MediaListener;
-import com.ebot.MikoBot.Feature.Ultils.Listener.MessageListener;
-import com.ebot.MikoBot.Feature.Ultils.Listener.TTSListener;
+import com.ebot.MikoBot.Ultils.Listener.MediaListener;
+import com.ebot.MikoBot.Ultils.Listener.TTSListener;
+import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
 import net.dv8tion.jda.api.AccountType;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
+import net.dv8tion.jda.api.entities.Guild;
+import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.Compression;
 
 import javax.security.auth.login.LoginException;
+import java.util.ArrayList;
+import java.util.Objects;
 
 public class BotInstance {
     public static final String MUSIC = "Music";
@@ -18,8 +24,7 @@ public class BotInstance {
     private String token;
     private String mode;
     private String region;
-    private MessageListener ttsListener = null;
-    private MessageListener mediaListener = null;
+    private ArrayList<GuildInstance> guildInstances = new ArrayList<>();
 
     BotInstance(String token, String mode, String region) {
         System.out.println("CREATING " + mode.toUpperCase() + " BOT...");
@@ -47,14 +52,10 @@ public class BotInstance {
     private void setMode(String mode) {
         switch (mode) {
             case MUSIC:
-                //jda.removeEventListener(ttsListener);
-                if (mediaListener == null) mediaListener = new MediaListener(jda.getSelfUser().getId());
-                jda.addEventListener(mediaListener);
+                jda.addEventListener(new MediaListener(this));
                 break;
             case TTS:
-                //jda.removeEventListener(mediaListener);
-                if (ttsListener == null) ttsListener = new TTSListener();
-                jda.addEventListener(ttsListener);
+                jda.addEventListener(new TTSListener(this));
                 break;
         }
     }
@@ -67,4 +68,109 @@ public class BotInstance {
         shutdown();
         build();
     }
+
+    public MediaInstance get(MessageReceivedEvent event) {
+        try {
+            VoiceChannel voiceChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
+            GuildInstance guildInstance;
+
+            //create if not exist
+            if ((guildInstance = findGuild(event.getGuild())) == null) {
+                guildInstances.add(guildInstance = new GuildInstance(event));
+            } else {
+                guildInstance.update(event);
+            }
+
+            //create
+            if (guildInstance.getMediaInstance() == null) {
+                guildInstance.setMediaInstance(new MediaInstance(event.getGuild(), mode));
+                return guildInstance.getMediaInstance();
+            } else {
+                return guildInstance.getMediaInstance();
+            }
+
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+            return null;
+        }
+    }
+
+    /**
+     * Find the MediaPlayer of specific server
+     *
+     * @param guild Server
+     * @return Pair of the server and it's MediaPlayer
+     */
+    private GuildInstance findGuild(final Guild guild) {
+        return guildInstances.stream().filter(p -> p.getGuild().equals(guild)).findAny().orElse(null);
+    }
+
+    public boolean isLastSendByBot(MessageReceivedEvent event) {
+        GuildInstance guildInstance = findGuild(event.getGuild());
+        if (guildInstance == null || !guildInstance.getLastTextChannel().equals(event.getTextChannel())) return false;
+        return guildInstance.isLastSendByBot();
+    }
+
+    public String getLastBotsMessageId(MessageReceivedEvent event) {
+        GuildInstance guildInstance = findGuild(event.getGuild());
+        if (guildInstance == null) return null;
+        return guildInstance.getLastBotsMessageId();
+    }
+
+    public TextChannel getLastTextChannel(MessageReceivedEvent event) {
+        GuildInstance guildInstance = findGuild(event.getGuild());
+        if (guildInstance == null) return null;
+        return guildInstance.getLastTextChannel();
+    }
 }
+
+class GuildInstance {
+    private Guild guild;
+    private MediaInstance mediaInstance = null;
+    private TextChannel lastTextChannel;
+    private String lastBotsMessageId = null;
+    private boolean isLastSendByBot = false;
+
+    GuildInstance(MessageReceivedEvent event) {
+        this.guild = event.getGuild();
+        update(event);
+    }
+
+    Guild getGuild() {
+        return guild;
+    }
+
+    MediaInstance getMediaInstance() {
+        return mediaInstance;
+    }
+
+    void update(MessageReceivedEvent event) {
+        if (event.getAuthor().isBot() && event.getMessage().getContentRaw().startsWith(">>> ")) {
+            this.lastBotsMessageId = event.getMessageId();
+            this.lastTextChannel = event.getTextChannel();
+            isLastSendByBot = true;
+        } else isLastSendByBot = false;
+    }
+
+    void setMediaInstance(MediaInstance mediaInstance) {
+        this.mediaInstance = mediaInstance;
+    }
+
+    public boolean isLastSendByBot() {
+        return isLastSendByBot;
+    }
+
+    public String getLastBotsMessageId() {
+        return lastBotsMessageId;
+    }
+
+    public TextChannel getLastTextChannel() {
+        return lastTextChannel;
+    }
+}
+
+
+
+
+
+

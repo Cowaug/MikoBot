@@ -1,16 +1,16 @@
-package com.ebot.MikoBot.Feature.Ultils.MediaPlayer;
+package com.ebot.MikoBot.Ultils.MediaPlayer;
 
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
-public class TtsController extends TrackController{
+public class TtsController extends TrackController {
 
     /**
      * Create the track scheduler for a player
      *
      * @param player The audio player this scheduler uses
      */
-    TtsController(AudioPlayer player) {
+    public TtsController(AudioPlayer player) {
         super(player);
     }
 

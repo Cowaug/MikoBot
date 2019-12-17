@@ -1,4 +1,4 @@
-package com.ebot.MikoBot.Feature.Ultils;
+package com.ebot.MikoBot.Ultils;
 
 /**
  * Add functionality to reboot the bot without clearing user data

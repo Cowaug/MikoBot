@@ -1,11 +1,14 @@
-package com.ebot.MikoBot.Feature.Ultils.MediaPlayer;
+package com.ebot.MikoBot.Ultils.MediaPlayer;
 
+import com.ebot.MikoBot.BotInstance;
+import com.ebot.MikoBot.Ultils.TextChannelManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
 
@@ -14,7 +17,8 @@ public class TrackController extends AudioEventAdapter {
     Queue queue;
     private boolean loopOne = false;
     private boolean loopAll = false;
-    private TextChannel textChannel = null;
+    private MessageReceivedEvent lastEvent = null;
+    private BotInstance botInstance = null;
     private boolean lock = false;
     private int oldPage = 0;
 
@@ -24,7 +28,7 @@ public class TrackController extends AudioEventAdapter {
      *
      * @param player The audio player this scheduler uses
      */
-    TrackController(AudioPlayer player) {
+    public TrackController(AudioPlayer player) {
         this.player = player;
         this.queue = new Queue();
     }
@@ -178,10 +182,11 @@ public class TrackController extends AudioEventAdapter {
     /**
      * Set text channel for notification
      *
-     * @param textChannel text channel to send message
+     * @param event text channel to send message
      */
-    public void setTextChannel(TextChannel textChannel) {
-        this.textChannel = textChannel;
+    public void setLastEvent(BotInstance botInstance,MessageReceivedEvent event) {
+        this.lastEvent = event;
+        this.botInstance = botInstance;
     }
 
     @Override
@@ -256,28 +261,81 @@ public class TrackController extends AudioEventAdapter {
 
     private void sendMessage(int page) {
         try {
-            String lastMessageId = MapMessageIDChannel.getBotLastMessageId(textChannel);
-            if (lastMessageId != null)
-                if (MapMessageIDChannel.editable(textChannel)) {
-//                getPlayingList().forEach(s ->  this.textChannel.editMessageById(lastMessageId,s).queue());
-                    this.textChannel.editMessageById(lastMessageId, getPlayingList().get(page)).queue();
-
-                } else {
-                    this.textChannel.deleteMessageById(lastMessageId).queue();
-//                getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
-                    this.textChannel.sendMessage(getPlayingList().get(page)).queue();
-                }
-            else {
-//            getPlayingList().forEach(s -> this.textChannel.sendMessage(s).queue());
-                this.textChannel.sendMessage(getPlayingList().get(page)).queue();
-            }
+            TextChannelManager.updateMessage(botInstance,lastEvent,getPlayingList().get(page));
             oldPage = page;
-        } catch (IndexOutOfBoundsException ignored) {
-
+        } catch (IndexOutOfBoundsException ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
     public void update(){
         sendMessage(oldPage);
+    }
+}
+
+class Queue {
+    private ArrayList<AudioTrack> audioTracks = new ArrayList<>();
+    private int currentIndex = -1;
+
+    void add(AudioTrack audioTrack) {
+        if (audioTrack == null) return;
+        audioTracks.add(audioTrack);
+    }
+
+    AudioTrack getNext() {
+        currentIndex++;
+        if (currentIndex < audioTracks.size())
+            return audioTracks.get(currentIndex).makeClone();
+        if (audioTracks.size() == 0)
+            currentIndex = -1;
+        else currentIndex = audioTracks.size();
+        return null;
+    }
+
+    AudioTrack getCurrent() {
+        if (currentIndex >= audioTracks.size() || currentIndex < 0) return null;
+        return audioTracks.get(currentIndex).makeClone();
+    }
+
+    AudioTrack getNextLoop() {
+        currentIndex++;
+        if (currentIndex >= audioTracks.size())
+            currentIndex = 0;
+        return audioTracks.get(currentIndex).makeClone();
+    }
+
+    AudioTrack pull() {
+        if (audioTracks.size() <= 0) return null;
+        AudioTrack audioTrack = audioTracks.get(0);
+        audioTracks.remove(0);
+        return audioTrack.makeClone();
+    }
+
+    AudioTrack get(int index) {
+        currentIndex = index - 1;
+        return getNext();
+    }
+
+    void remove(int index) {
+        audioTracks.remove(index);
+        if (currentIndex >= index)
+            currentIndex--;
+    }
+
+    void clearAll() {
+        audioTracks.clear();
+        currentIndex = -1;
+    }
+
+    ArrayList<AudioTrack> getList() {
+        return audioTracks;
+    }
+
+    int getCurrentIndex() {
+        return currentIndex;
+    }
+
+    int getSize() {
+        return audioTracks.size();
     }
 }

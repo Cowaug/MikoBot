@@ -1,6 +1,5 @@
-package com.ebot.MikoBot.Feature.Ultils.MediaPlayer;
+package com.ebot.MikoBot.Ultils.MediaPlayer;
 
-import com.ebot.MikoBot.MainClass;
 import com.sedmelluq.discord.lavaplayer.player.*;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager;
@@ -14,10 +13,14 @@ import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager
 import com.sedmelluq.discord.lavaplayer.tools.FriendlyException;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
+import com.sedmelluq.discord.lavaplayer.track.playback.AudioFrame;
+import net.dv8tion.jda.api.audio.AudioSendHandler;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.managers.AudioManager;
+
+import java.nio.ByteBuffer;
 
 import static com.ebot.MikoBot.BotInstance.TTS;
 
@@ -30,9 +33,8 @@ public class MediaInstance {
      * Create specific media player for a server
      *
      * @param guild        server
-     * @param voiceChannel voice channel to connect
      */
-    MediaInstance(Guild guild, VoiceChannel voiceChannel,String TYPE) {
+    public MediaInstance(Guild guild, String TYPE) {
 
         playerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(playerManager);
@@ -55,7 +57,6 @@ public class MediaInstance {
         controller.setVolume(25);
         audioManager = guild.getAudioManager();
         audioManager.setSendingHandler(new AudioPlayerSendHandler(player));
-        audioManager.openAudioConnection(voiceChannel);
     }
 
     /**
@@ -113,3 +114,34 @@ public class MediaInstance {
         return controller;
     }
 }
+
+class AudioPlayerSendHandler implements AudioSendHandler {
+    private final AudioPlayer audioPlayer;
+    private AudioFrame lastFrame;
+
+    /**
+     * Implement AudioSendHandler for discord specifically
+     *
+     * @param audioPlayer Audio player
+     */
+    AudioPlayerSendHandler(AudioPlayer audioPlayer) {
+        this.audioPlayer = audioPlayer;
+    }
+
+    @Override
+    public boolean canProvide() {
+        lastFrame = audioPlayer.provide();
+        return lastFrame != null;
+    }
+
+    @Override
+    public ByteBuffer provide20MsAudio() {
+        return ByteBuffer.wrap(lastFrame.getData());
+    }
+
+    @Override
+    public boolean isOpus() {
+        return true;
+    }
+}
+

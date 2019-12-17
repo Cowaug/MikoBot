@@ -1,10 +1,9 @@
 package com.ebot.MikoBot.Feature;
 
-import com.ebot.MikoBot.Feature.Ultils.AutoReplaceWords.Slang;
-import com.ebot.MikoBot.Feature.Ultils.MediaPlayer.MediaInstance;
-import com.ebot.MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
+import com.ebot.MikoBot.BotInstance;
+import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
 import com.ebot.MikoBot.MainClass;
-import com.vdurmont.emoji.EmojiParser;
+import com.ebot.MikoBot.Ultils.TextChannelManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -12,12 +11,14 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.io.*;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Objects;
 
-import static com.ebot.MikoBot.BotInstance.MUSIC;
 import static com.ebot.MikoBot.BotInstance.TTS;
-import static com.ebot.MikoBot.Feature.MediaPlayback.MEDIA_PREFIX;
+import static com.ebot.MikoBot.Feature.PlayingMusic.MEDIA_PREFIX;
+import static com.ebot.MikoBot.MainClass.PROGRAM_PATH;
+import static com.ebot.MikoBot.Ultils.TextChannelManager.react;
 
 public class TextToSpeech {
     private static final String EN = "en";
@@ -26,12 +27,14 @@ public class TextToSpeech {
 
     private ArrayList<String> autoTTS;
     private ArrayList<String> autoTTSDelete;
+    private BotInstance botInstance;
 
     /**
      * Load the list of user whom prefer
      * automatic TTS (and delete message afterward)
      */
-    public TextToSpeech() {
+    public TextToSpeech(BotInstance botInstance) {
+        this.botInstance=botInstance;
         try {
             autoTTS = load("autoTTS.txt");
             autoTTSDelete = load("autoTTSDelete.txt");
@@ -70,21 +73,18 @@ public class TextToSpeech {
                 content = "," + content;
             else content = "." + content;
         } else return;
+        MediaInstance mediaInstance = botInstance.get(event);
 
-        VoiceChannel voiceChannel = Objects.requireNonNull(member.getVoiceState()).getChannel();
-        if (voiceChannel != null) {
+        if (mediaInstance != null) {
             String cmd = getCmd(content);
             content = content.replaceFirst(cmd, "");
-            MediaInstance mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel,TTS);
-
-
                 switch (cmd) {
                     case ",":
                         textChannel.deleteMessageById(messageId).queue();
-                        GoogleTranslate(mediaInstance, content);
+                        GoogleTranslate(event,mediaInstance, content);
                         return;
                     case ".":
-                        GoogleTranslate(mediaInstance, content);
+                        GoogleTranslate(event,mediaInstance, content);
                         return;
                     case "lockme":
                         if (!autoTTS.contains(memberId)) {
@@ -109,7 +109,7 @@ public class TextToSpeech {
                             break;
 
                         } else {
-                            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                            react(event,":x:");
                             return;
                         }
                     case "remove": {
@@ -117,7 +117,7 @@ public class TextToSpeech {
                             Slang.removeSlang(content.replace(" ",""));
                             break;
                         } else {
-                            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                            react(event,":x:");
                             return;
                         }
                     }
@@ -135,20 +135,22 @@ public class TextToSpeech {
 //                    case "reboot_":
 //                        MainClass.reboot(TTS);
 //                        break;
+                    case "info":
+                        TextChannelManager.updateMessage(botInstance,event,TextChannelManager.getInfoTTS());
+                        break;
                     case "skip":
-                        MediaManager.connectTo(event.getGuild(), voiceChannel,TTS).getController().nextTrack(false);
+                        mediaInstance.getController().nextTrack(false);
                         break;
                     case "leave":
                         mediaInstance.disconnect();
                         break;
                     default:
-                        textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+                        react(event,":x:");
                         return;
                 }
-                textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":ok_hand:")).queue();
-
+                react(event,":ok_hand:");
         } else {
-            if (!autoIgnore) textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(":x:")).queue();
+            if (!autoIgnore) react(event,":x:");
         }
     }
 
@@ -159,7 +161,7 @@ public class TextToSpeech {
      * @param mediaInstance Server's player
      * @param text          Text user wants to speak
      */
-    private void GoogleTranslate(MediaInstance mediaInstance, String text) {
+    private void GoogleTranslate(MessageReceivedEvent event,MediaInstance mediaInstance, String text) {
         text = Slang.makeFormal(text);
         String language = VN;
         if (text.startsWith(EN + " ")) {
@@ -175,6 +177,7 @@ public class TextToSpeech {
 
         String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=" + language + "&q=";
         try {
+            mediaInstance.reconnect(Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel());
             mediaInstance.play(url + URLEncoder.encode(text.replace("@","@ "), "UTF-8"), null);
         } catch (Exception e) {
             System.out.println(e.getMessage());
@@ -257,5 +260,166 @@ public class TextToSpeech {
             }
         }
         return arrayList;
+    }
+}
+
+class Slang {
+    private static final String SPLITTER = " <>\\<> ";
+    private static ArrayList<WordPair> words = null;
+
+    /**
+     * Replace pre-defined slang word in the string
+     * with the formal word
+     *
+     * @param sentence Sentence contains slang
+     * @return Sentence without slang
+     */
+    public static String makeFormal(String sentence) {
+        if (words == null) {
+            words = new ArrayList<>();
+            load();
+        }
+        sentence = " " + sentence + " ";
+        for (WordPair w : words) {
+            sentence = sentence.replace(" " + w.getSlang() + " ", " " + w.getFormal() + " ");
+        }
+        return sentence.substring(1, sentence.length() - 1);
+    }
+
+    /**
+     * Define a new slang
+     *
+     * @param slang  Slang need to be defined
+     * @param formal Formal word corresponding to Slang
+     */
+    public static void addSlang(String slang, String formal) {
+        for (WordPair w : words)
+            if (w.getSlang().equals(slang)) return;
+        words.add(new WordPair(slang, formal));
+        save();
+    }
+
+    /**
+     * Remove a slang
+     *
+     * @param slang Slang need to be removed
+     */
+    public static void removeSlang(String slang) {
+        for (int i = 0; i < words.size(); i++) {
+            WordPair w = words.get(i);
+            if (w.getSlang().equals(slang)) {
+                words.remove(i);
+                break;
+            }
+        }
+        save();
+    }
+
+    /**
+     * Save defined slang to disk
+     */
+    private static void save() {
+        OutputStreamWriter writer = null;
+        BufferedWriter bufferedWriter = null;
+        try {
+            writer = new OutputStreamWriter(new FileOutputStream(PROGRAM_PATH + "/slang-spoiler.txt"), StandardCharsets.UTF_8);
+            bufferedWriter = new BufferedWriter(writer);
+            for (WordPair w : words) {
+                bufferedWriter.write(w.getSlang() + SPLITTER + w.getFormal() + "\n");
+            }
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            try {
+                assert bufferedWriter != null;
+                bufferedWriter.close();
+                writer.close();
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+            }
+        }
+    }
+
+    /**
+     * Load defined slang for use
+     */
+    private static void load() {
+        InputStreamReader reader = null;
+        BufferedReader bufferedReader = null;
+        try {
+            reader = new InputStreamReader(new FileInputStream(PROGRAM_PATH + "/slang-spoiler.txt"), StandardCharsets.UTF_8);
+
+            bufferedReader = new BufferedReader(reader);
+            String line;
+            while ((line = bufferedReader.readLine()) != null) {
+                String substring = line.substring(line.indexOf(SPLITTER) + SPLITTER.length());
+                words.add(new WordPair(line.substring(0, line.indexOf(SPLITTER)), substring));
+                System.out.println("Added: " + line.substring(0, line.indexOf(SPLITTER)) + " as " + substring);
+            }
+
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        } finally {
+            try {
+                assert bufferedReader != null;
+                bufferedReader.close();
+                reader.close();
+
+            } catch (IOException e) {
+                System.out.println(e.getMessage());
+
+            }
+        }
+    }
+
+    public static void list(TextChannel textChannel) {
+        if (words == null) {
+            words = new ArrayList<>();
+            load();
+        }
+        StringBuilder output = new StringBuilder(">>> ");
+        for (WordPair wordPair : words) {
+            output.append(wordPair.getSlang()).append("\t").append(wordPair.getFormal()).append("\n");
+        }
+        textChannel.sendMessage(output).queue();
+    }
+}
+
+class WordPair implements Serializable {
+    private String formal;
+    private String slang;
+
+    /**
+     * Create new word
+     *
+     * @param slang  Slang
+     * @param formal Formal of the corresponding slang
+     */
+    WordPair(String slang, String formal) {
+        this.slang = slang;
+        this.formal = formal;
+    }
+
+    /**
+     * Get the formal word
+     *
+     * @return Formal word
+     */
+    String getFormal() {
+        return formal;
+    }
+
+    /**
+     * Get the slang
+     *
+     * @return Slang
+     */
+    String getSlang() {
+        return slang;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        return super.equals(obj);
     }
 }

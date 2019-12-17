@@ -1,10 +1,8 @@
 package com.ebot.MikoBot.Feature;
 
-import com.ebot.MikoBot.Feature.Ultils.MediaPlayer.MapMessageIDChannel;
-import com.ebot.MikoBot.Feature.Ultils.MediaPlayer.MediaInstance;
-import com.ebot.MikoBot.Feature.Ultils.MediaPlayer.MediaManager;
-import com.ebot.MikoBot.MainClass;
-import com.vdurmont.emoji.EmojiParser;
+import com.ebot.MikoBot.BotInstance;
+import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
+import com.ebot.MikoBot.Ultils.TextChannelManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -12,19 +10,16 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.Objects;
 
-import static com.ebot.MikoBot.BotInstance.MUSIC;
-import static com.ebot.MikoBot.BotInstance.TTS;
+import static com.ebot.MikoBot.Ultils.TextChannelManager.react;
 
-public class MediaPlayback {
+public class PlayingMusic {
     static String MEDIA_PREFIX = "/";
     private TextChannel textChannel;
-    private String messageId;
-    private MessageReceivedEvent event;
     private MediaInstance mediaInstance;
-    private String BOT_ID;
+    private BotInstance botInstance;
 
-    public MediaPlayback(String BOT_ID){
-        this.BOT_ID = BOT_ID;
+    public PlayingMusic(BotInstance botInstance) {
+        this.botInstance = botInstance;
     }
 
     /**
@@ -33,21 +28,17 @@ public class MediaPlayback {
      * @param event User event which trigger this
      */
     public void start(MessageReceivedEvent event) {
-        this.event = event;
         Member member = event.getMember();
         assert member != null;
 
         textChannel = event.getTextChannel();
-        messageId = event.getMessageId();
 
         String[] message = event.getMessage().getContentDisplay().split("\n");
 
-        MapMessageIDChannel.setCurrentMessageId(textChannel, event.getMessageId());
-        if (event.getAuthor().isBot() && event.getAuthor().getJDA().getSelfUser().getId().equals(BOT_ID) && event.getMessage().getContentDisplay().startsWith(">>> ```")) {
-            MapMessageIDChannel.setBotLastMessageId(textChannel, event.getMessageId());
-        }
+        new Thread(() -> {
+            mediaInstance = botInstance.get(event);
+            VoiceChannel voiceChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
 
-        Thread thread = new Thread(() -> {
             for (String s : message) {
                 if (!s.startsWith(MEDIA_PREFIX)) {
                     continue;
@@ -57,14 +48,12 @@ public class MediaPlayback {
                 String cmd = content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length());
 
                 content = content.replaceFirst(cmd, "").replace(" ", "");
+                mediaInstance.getController().setLastEvent(botInstance, event);
 
-                VoiceChannel voiceChannel = Objects.requireNonNull(member.getVoiceState()).getChannel();
+                if (mediaInstance != null && voiceChannel != null) {
+                    if(!cmd.equals("info")) mediaInstance.reconnect(voiceChannel);
 
-                if (voiceChannel != null) {
-                    mediaInstance = MediaManager.connectTo(event.getGuild(), voiceChannel,MUSIC);
-                    mediaInstance.getController().setTextChannel(textChannel);
-
-                    try{
+                    try {
                         switch (cmd) {
                             case "play":
                                 if (!content.equals("")) {
@@ -82,7 +71,7 @@ public class MediaPlayback {
                                     }
                                     break;
                                 } else {
-                                    react(":x:");
+                                    react(event, ":x:");
                                     return;
                                 }
                             case "remove":
@@ -93,19 +82,19 @@ public class MediaPlayback {
                                         mediaInstance.getController().remove(i - 1);
                                     break;
                                 } else {
-                                    react(":x:");
+                                    react(event, ":x:");
                                     return;
                                 }
 
                             case "setVol":
                                 int vol;
                                 if (!content.equals("")) {
-                                    if ((vol = Integer.parseInt(content)) > 0){
+                                    if ((vol = Integer.parseInt(content)) > 0) {
                                         mediaInstance.getController().setVolume(vol);
                                     }
                                     break;
                                 } else {
-                                    react(":x:");
+                                    react(event, ":x:");
                                     return;
                                 }
                             case "stop":
@@ -138,15 +127,20 @@ public class MediaPlayback {
                             case "join":
                                 try {
                                     mediaInstance.reconnect(voiceChannel);
+                                    mediaInstance.getController().pause();
+                                    mediaInstance.getController().resume();
                                 } catch (Exception ex) {
                                     System.out.println(ex.getMessage());
-                                    react(":x:");
+                                    react(event, ":x:");
                                     return;
                                 }
                                 break;
 //                            case "reboot_":
-//                                MainClass.reboot(MUSIC);
-//                                break;
+////                                MainClass.reboot(MUSIC);
+////                                break;
+                            case "info":
+                                TextChannelManager.updateMessage(botInstance,event,TextChannelManager.getInfoMusic());
+                                break;
                             case "page":
                             case "queue":
 
@@ -158,35 +152,26 @@ public class MediaPlayback {
                                     mediaInstance.getController().getQueue(page - 1);
                                     break;
                                 } else {
-                                    react(":x:");
+                                    react(event, ":x:");
                                     return;
                                 }
 
                             default:
-                                react(":x:");
+                                react(event, ":x:");
                                 return;
                         }
-                        react(":ok_hand:");
-                    }
-                    catch (Exception ex){
+                        react(event, ":ok_hand:");
+                    } catch (Exception ex) {
                         System.out.println(ex.getMessage());
-                        react(":boom:");
+                        react(event, ":boom:");
                         return;
                     }
 
                 } else {
-                    react(":x:");
+                    react(event, ":x:");
                 }
 
             }
-        });
-        thread.start();
+        }).start();
     }
-
-    private void react(String input) {
-        if (!event.getAuthor().isBot()) {
-            textChannel.addReactionById(messageId, EmojiParser.parseToUnicode(input)).queue();
-        }
-    }
-
 }
