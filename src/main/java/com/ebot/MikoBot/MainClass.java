@@ -32,11 +32,11 @@ public class MainClass {
      */
     public static void main(String[] args) {
         try {
+            new Thread(() -> ttsBot = new BotInstance(args[0],BotInstance.TTS,"VN")).start();
+            new Thread(() -> musicBot = new BotInstance(args[1],BotInstance.MUSIC,"VN")).start();
+        } catch (Exception ex) {
             new Thread(() -> ttsBot = new BotInstance(System.getenv("TTS_BOT_TOKEN"),BotInstance.TTS,System.getenv("REGION"))).start();
             new Thread(() -> musicBot = new BotInstance(System.getenv("MUSIC_BOT_TOKEN"),BotInstance.MUSIC,System.getenv("REGION"))).start();
-
-        } catch (Exception ex) {
-            //TODO Local run
             System.out.println(ex.getMessage());
         }
     }

@@ -2,8 +2,9 @@ package com.ebot.MikoBot.Feature;
 
 import com.ebot.MikoBot.BotInstance;
 import com.ebot.MikoBot.MainClass;
+import com.ebot.MikoBot.Ultils.BackupAndRestore;
+import com.ebot.MikoBot.Ultils.Entities.WordPair;
 import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
-import com.ebot.MikoBot.Ultils.TextChannelManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
@@ -34,8 +35,8 @@ public class TextToSpeech {
     public TextToSpeech(BotInstance botInstance) {
         this.botInstance = botInstance;
         try {
-            autoTTS = load("autoTTS.txt");
-            autoTTSDelete = load("autoTTSDelete.txt");
+            autoTTS = BackupAndRestore.loadStringList("autoTTS.txt");
+            autoTTSDelete = BackupAndRestore.loadStringList("autoTTSDelete.txt");
         } catch (Exception ignore) {
             if (autoTTS == null) autoTTS = new ArrayList<>();
             if (autoTTSDelete == null) autoTTSDelete = new ArrayList<>();
@@ -87,12 +88,12 @@ public class TextToSpeech {
                 case "lockme":
                     if (!autoTTS.contains(memberId)) {
                         autoTTS.add(memberId);
-                        save(autoTTS, "autoTTS.txt");
+                        BackupAndRestore.saveStringList(autoTTS, "autoTTS.txt");
                     }
                     break;
                 case "unlockme":
                     autoTTS.remove(memberId);
-                    save(autoTTS, "autoTTS.txt");
+                    BackupAndRestore.saveStringList(autoTTS, "autoTTS.txt");
                     break;
                 case "add":
                     if (!content.equals("")) {
@@ -103,7 +104,7 @@ public class TextToSpeech {
 
                         if (str[0].equals("") || str[1].equals("")) return;
 
-                        Slang.addSlang(str[0], str[1]);
+                        Acronym.addAcronym(str[0], str[1]);
                         break;
 
                     } else {
@@ -112,7 +113,7 @@ public class TextToSpeech {
                     }
                 case "remove": {
                     if (!content.equals("")) {
-                        Slang.removeSlang(content.replace(" ", ""));
+                        Acronym.removeAcronym(content.replace(" ", ""));
                         break;
                     } else {
                         react(event, ":x:");
@@ -121,14 +122,14 @@ public class TextToSpeech {
                 }
                 case "delete":
                     if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
-                    save(autoTTSDelete, "autoTTSDelete.txt");
+                    BackupAndRestore.saveStringList(autoTTSDelete, "autoTTSDelete.txt");
                     break;
                 case "keep":
                     autoTTSDelete.remove(memberId);
-                    save(autoTTSDelete, "autoTTSDelete.txt");
+                    BackupAndRestore.saveStringList(autoTTSDelete, "autoTTSDelete.txt");
                     break;
                 case "list":
-                    Slang.list(textChannel);
+                    Acronym.list(textChannel);
                     break;
 //                    case "reboot_":
 //                        MainClass.reboot(TTS);
@@ -160,7 +161,7 @@ public class TextToSpeech {
      * @param text          Text user wants to speak
      */
     private void GoogleTranslate(MessageReceivedEvent event, MediaInstance mediaInstance, String text) {
-        text = Slang.makeFormal(text);
+        text = Acronym.replaceAcronym(text);
         String language = VN;
         if (text.startsWith(EN + " ")) {
             text = text.replaceFirst(EN + " ", "");
@@ -198,71 +199,9 @@ public class TextToSpeech {
                 return messageContent.substring(0, messageContent.contains(" ") ? messageContent.indexOf(" ") : messageContent.length());
         }
     }
-
-    /**
-     * Save file to disk
-     *
-     * @param arrayList Array List of String need to save
-     * @param filename  Filename on the disk
-     */
-    private void save(ArrayList<String> arrayList, String filename) {
-        FileWriter writer = null;
-        BufferedWriter bufferedWriter = null;
-        try {
-            writer = new FileWriter(MainClass.PROGRAM_PATH + "/" + filename);
-            bufferedWriter = new BufferedWriter(writer);
-            for (String s : arrayList) {
-                bufferedWriter.write(s + "\n");
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        } finally {
-            try {
-                assert bufferedWriter != null;
-                bufferedWriter.close();
-                writer.close();
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-    }
-
-    /**
-     * Get the file content and load as Array List of String
-     *
-     * @param filename filename on the disk
-     * @return Array List of String
-     */
-    private ArrayList<String> load(String filename) {
-        ArrayList<String> arrayList = new ArrayList<>();
-
-        FileReader reader = null;
-        BufferedReader bufferedReader = null;
-        try {
-            reader = new FileReader(MainClass.PROGRAM_PATH + "/" + filename);
-            bufferedReader = new BufferedReader(reader);
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                arrayList.add(line);
-            }
-            return arrayList;
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        } finally {
-            try {
-                assert bufferedReader != null;
-                bufferedReader.close();
-                reader.close();
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
-        return arrayList;
-    }
 }
 
-class Slang {
-    private static final String SPLITTER = " <>\\<> ";
+class Acronym {
     private static ArrayList<WordPair> words = null;
 
     /**
@@ -272,7 +211,7 @@ class Slang {
      * @param sentence Sentence contains slang
      * @return Sentence without slang
      */
-    public static String makeFormal(String sentence) {
+    static String replaceAcronym(String sentence) {
         if (words == null) {
             words = new ArrayList<>();
             load();
@@ -287,25 +226,25 @@ class Slang {
     /**
      * Define a new slang
      *
-     * @param slang  Slang need to be defined
+     * @param acronym  Slang need to be defined
      * @param formal Formal word corresponding to Slang
      */
-    public static void addSlang(String slang, String formal) {
+    static void addAcronym(String acronym, String formal) {
         for (WordPair w : words)
-            if (w.getSlang().equals(slang)) return;
-        words.add(new WordPair(slang, formal));
+            if (w.getSlang().equals(acronym)) return;
+        words.add(new WordPair(acronym, formal));
         save();
     }
 
     /**
      * Remove a slang
      *
-     * @param slang Slang need to be removed
+     * @param acronym Slang need to be removed
      */
-    public static void removeSlang(String slang) {
+    static void removeAcronym(String acronym) {
         for (int i = 0; i < words.size(); i++) {
             WordPair w = words.get(i);
-            if (w.getSlang().equals(slang)) {
+            if (w.getSlang().equals(acronym)) {
                 words.remove(i);
                 break;
             }
@@ -317,57 +256,15 @@ class Slang {
      * Save defined slang to disk
      */
     private static void save() {
-        OutputStreamWriter writer = null;
-        BufferedWriter bufferedWriter = null;
-        try {
-            writer = new OutputStreamWriter(new FileOutputStream(PROGRAM_PATH + "/slang-spoiler.txt"), StandardCharsets.UTF_8);
-            bufferedWriter = new BufferedWriter(writer);
-            for (WordPair w : words) {
-                bufferedWriter.write(w.getSlang() + SPLITTER + w.getFormal() + "\n");
-            }
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        } finally {
-            try {
-                assert bufferedWriter != null;
-                bufferedWriter.close();
-                writer.close();
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-            }
-        }
+        BackupAndRestore.saveAcronym(words);
     }
 
     /**
      * Load defined slang for use
      */
     private static void load() {
-        InputStreamReader reader = null;
-        BufferedReader bufferedReader = null;
-        try {
-            reader = new InputStreamReader(new FileInputStream(PROGRAM_PATH + "/slang-spoiler.txt"), StandardCharsets.UTF_8);
-
-            bufferedReader = new BufferedReader(reader);
-            String line;
-            while ((line = bufferedReader.readLine()) != null) {
-                String substring = line.substring(line.indexOf(SPLITTER) + SPLITTER.length());
-                words.add(new WordPair(line.substring(0, line.indexOf(SPLITTER)), substring));
-                System.out.println("Added: " + line.substring(0, line.indexOf(SPLITTER)) + " as " + substring);
-            }
-
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        } finally {
-            try {
-                assert bufferedReader != null;
-                bufferedReader.close();
-                reader.close();
-
-            } catch (IOException e) {
-                System.out.println(e.getMessage());
-
-            }
-        }
+        words.clear();
+        words.addAll(BackupAndRestore.loadAcronym());
     }
 
     public static void list(TextChannel textChannel) {
@@ -383,41 +280,3 @@ class Slang {
     }
 }
 
-class WordPair implements Serializable {
-    private String formal;
-    private String slang;
-
-    /**
-     * Create new word
-     *
-     * @param slang  Slang
-     * @param formal Formal of the corresponding slang
-     */
-    WordPair(String slang, String formal) {
-        this.slang = slang;
-        this.formal = formal;
-    }
-
-    /**
-     * Get the formal word
-     *
-     * @return Formal word
-     */
-    String getFormal() {
-        return formal;
-    }
-
-    /**
-     * Get the slang
-     *
-     * @return Slang
-     */
-    String getSlang() {
-        return slang;
-    }
-
-    @Override
-    public boolean equals(Object obj) {
-        return super.equals(obj);
-    }
-}

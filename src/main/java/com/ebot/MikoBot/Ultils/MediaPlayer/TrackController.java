@@ -16,7 +16,7 @@ public class TrackController extends AudioEventAdapter {
     AudioPlayer player;
     Queue queue;
     private boolean loopOne = false;
-    private boolean loopAll = false;
+    private boolean loopAll = true;
     private MessageReceivedEvent lastEvent = null;
     private BotInstance botInstance = null;
     private boolean lock = false;

@@ -12,6 +12,7 @@ public class TtsController extends TrackController {
      */
     public TtsController(AudioPlayer player) {
         super(player);
+        setLoopOff();
     }
 
     @Override
