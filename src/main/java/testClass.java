@@ -7,12 +7,7 @@ import java.io.InputStreamReader;
 public class testClass {
     public static void main(String[] args){
         try {
-            run("git init");
-            run("git add .");
-            run("git commit -m \"first commit\"");
-            run("git remote add origin https://github.com/exos288/miko-bot-data.git");
-            run("git push -u origin \"exos288:Binh.2808@github.com/\"");
-            run("git add .");
+
         }catch (Exception ex){
             ex.printStackTrace();
         }
