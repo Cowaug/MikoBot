@@ -14,7 +14,7 @@ public class testClass {
             run("git push -u origin master");
             run("git add .");
         }catch (Exception ex){
-            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
     public static void run(String command) throws IOException, InterruptedException {
