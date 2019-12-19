@@ -12,6 +12,7 @@ public class testClass {
             run("git commit -m \"first commit\"");
             run("git remote add origin https://github.com/exos288/miko-bot-data.git");
             run("git push -u origin master");
+            run("git add .");
         }catch (Exception ex){
             System.out.println(ex.getMessage());
         }
