@@ -4,7 +4,12 @@ import com.ebot.MikoBot.MainClass;
 import com.ebot.MikoBot.Ultils.Entities.WordPair;
 
 import java.io.*;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.charset.StandardCharsets;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.SQLException;
 import java.util.ArrayList;
 
 import static com.ebot.MikoBot.MainClass.PROGRAM_PATH;
@@ -113,19 +118,19 @@ public class BackupAndRestore {
             }
         }
     }
-}
 
-class SyncWithGit{
-    public static void pull() throws IOException, InterruptedException {
-        String command = "ping -c 3 www.google.com;ping -c 3 www.google.com";
-        Process proc = Runtime.getRuntime().exec(command);
-//        BufferedReader reader =
-//                new BufferedReader(new InputStreamReader(proc.getInputStream()));
-//        String line = "";
-//        while((line = reader.readLine()) != null) {
-//            System.out.print(line + "\n");
-//        }
-        proc.waitFor();
+    public static void initDB(){
 
+    }
+
+    private static Connection getConnection() throws URISyntaxException, SQLException {
+        URI jdbUri = new URI(System.getenv("JAWSDB_URL"));
+
+        String username = jdbUri.getUserInfo().split(":")[0];
+        String password = jdbUri.getUserInfo().split(":")[1];
+        String port = String.valueOf(jdbUri.getPort());
+        String jdbUrl = "jdbc:mysql://" + jdbUri.getHost() + ":" + port + jdbUri.getPath();
+
+        return DriverManager.getConnection(jdbUrl, username, password);
     }
 }

@@ -1,27 +1,32 @@
-import com.ebot.MikoBot.MainClass;
-
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
+import java.sql.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class testClass {
-    public static void main(String[] args){
-        try {
+    public static void main(String[] args) {
+        String url = "jdbc:mysql://localhost:3306/testdb?useSSL=false";
+        String user = "root";
+        String password = "Binh.2808";
 
-        }catch (Exception ex){
+        String query = "SELECT VERSION()";
+
+        try (Connection con = DriverManager.getConnection(url, user, password);
+             Statement st = con.createStatement();
+             ResultSet rs = st.executeQuery(query)) {
+
+            if (rs.next()) {
+
+                System.out.println(rs.getString(1));
+            }
+
+        } catch (SQLException ex) {
             ex.printStackTrace();
-        }
-    }
-    public static void run(String command) throws IOException, InterruptedException {
-        Process proc = Runtime.getRuntime().exec(command);
-        // Read the output
-        BufferedReader reader =
-                new BufferedReader(new InputStreamReader(proc.getInputStream()));
 
-        String line = "";
-        while((line = reader.readLine()) != null) {
-            System.out.print(line + "\n");
+//            Logger lgr = Logger.getLogger(JdbcMySQLVersion.class.getName());
+//            lgr.log(Level.SEVERE, ex.getMessage(), ex);
         }
-        proc.waitFor();
+
     }
+
+
 }
