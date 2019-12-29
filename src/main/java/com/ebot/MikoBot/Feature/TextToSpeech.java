@@ -1,23 +1,31 @@
 package com.ebot.MikoBot.Feature;
 
 import com.ebot.MikoBot.BotInstance;
-import com.ebot.MikoBot.MainClass;
-import com.ebot.MikoBot.Ultils.BackupAndRestore;
+import com.ebot.MikoBot.Ultils.Entities.UserReference;
 import com.ebot.MikoBot.Ultils.Entities.WordPair;
+import com.ebot.MikoBot.Ultils.JawMySQL;
 import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import java.io.*;
+import javax.sound.sampled.*;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URL;
 import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Objects;
 
 import static com.ebot.MikoBot.Feature.PlayingMusic.MEDIA_PREFIX;
-import static com.ebot.MikoBot.MainClass.PROGRAM_PATH;
 import static com.ebot.MikoBot.Ultils.TextChannelManager.react;
+import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
+import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
 public class TextToSpeech {
     private static final String EN = "en";
@@ -35,11 +43,15 @@ public class TextToSpeech {
     public TextToSpeech(BotInstance botInstance) {
         this.botInstance = botInstance;
         try {
-            autoTTS = BackupAndRestore.loadStringList("autoTTS.txt");
-            autoTTSDelete = BackupAndRestore.loadStringList("autoTTSDelete.txt");
+            autoTTS = JawMySQL.loadTable("autoTTS");
         } catch (Exception ignore) {
-            if (autoTTS == null) autoTTS = new ArrayList<>();
-            if (autoTTSDelete == null) autoTTSDelete = new ArrayList<>();
+            autoTTS = new ArrayList<>();
+        }
+
+        try {
+            autoTTSDelete = JawMySQL.loadTable("autoTTSDelete");
+        } catch (Exception ignore) {
+            autoTTSDelete = new ArrayList<>();
         }
     }
 
@@ -59,14 +71,12 @@ public class TextToSpeech {
         boolean autoIgnore;
 
         String TTS_PREFIX = ".";
-        String IGNORE_PREFIX = "`";
+        String[] IGNORE_KEYWORD = {MEDIA_PREFIX, "`", "http://", "https://"};
 
         if (content.startsWith(TTS_PREFIX)) {
             autoIgnore = false;
             content = content.replaceFirst(TTS_PREFIX, "");
-        } else if (!content.startsWith(MEDIA_PREFIX) &&
-                !content.startsWith(IGNORE_PREFIX) &&
-                autoTTS.contains(memberId)) {
+        } else if (Arrays.stream(IGNORE_KEYWORD).noneMatch(content::startsWith) && autoTTS.contains(memberId)) {
             autoIgnore = true;
             if (autoTTSDelete.contains(memberId))
                 content = "," + content;
@@ -88,21 +98,25 @@ public class TextToSpeech {
                 case "lockme":
                     if (!autoTTS.contains(memberId)) {
                         autoTTS.add(memberId);
-                        BackupAndRestore.saveStringList(autoTTS, "autoTTS.txt");
+                        JawMySQL.addToTable("autoTTS", memberId);
                     }
                     break;
                 case "unlockme":
                     autoTTS.remove(memberId);
-                    BackupAndRestore.saveStringList(autoTTS, "autoTTS.txt");
+                    JawMySQL.removeFromTable("autoTTS", memberId);
                     break;
                 case "add":
+                    content = content.replaceFirst(" ", "");
                     if (!content.equals("")) {
                         String[] str = {null, null};
 
                         str[0] = content.substring(0, content.indexOf(" "));
-                        str[1] = content.substring(content.indexOf(" ") + 1);
+                        str[1] = content.replaceFirst(str[0], "");
 
-                        if (str[0].equals("") || str[1].equals("")) return;
+                        if (str[0].equals("") || str[1].equals("")) {
+                            react(event, ":x:");
+                            return;
+                        }
 
                         Acronym.addAcronym(str[0], str[1]);
                         break;
@@ -122,16 +136,25 @@ public class TextToSpeech {
                 }
                 case "delete":
                     if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
-                    BackupAndRestore.saveStringList(autoTTSDelete, "autoTTSDelete.txt");
+                    JawMySQL.addToTable("autoTTSDelete", memberId);
                     break;
                 case "keep":
                     autoTTSDelete.remove(memberId);
-                    BackupAndRestore.saveStringList(autoTTSDelete, "autoTTSDelete.txt");
+                    JawMySQL.removeFromTable("autoTTSDelete", memberId);
+                    break;
+                case "setVoice":
+                    short voiceRef = 1;
+                    try {
+                        voiceRef = Short.parseShort(content.replace(" ", ""));
+                    } catch (Exception ex) {
+                        System.out.print(ex.getMessage());
+                    }
+                    VoiceReference.modifyUserRef(memberId, voiceRef);
                     break;
                 case "list":
                     Acronym.list(textChannel);
                     break;
-//                    case "reboot_":
+//               case "reboot_":
 //                        MainClass.reboot(TTS);
 //                        break;
 //                case "info":
@@ -176,10 +199,11 @@ public class TextToSpeech {
 
         String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=" + language + "&q=";
         try {
+            String fileUrl = getAudioPath(url + URLEncoder.encode(text.replace("@", "@ "), "UTF-8"), Objects.requireNonNull(event.getMember()).getId(), event.getMessageId());
             mediaInstance.reconnect(Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel());
-            mediaInstance.play(url + URLEncoder.encode(text.replace("@", "@ "), "UTF-8"), null);
+            mediaInstance.play(fileUrl, null);
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -199,6 +223,53 @@ public class TextToSpeech {
                 return messageContent.substring(0, messageContent.contains(" ") ? messageContent.indexOf(" ") : messageContent.length());
         }
     }
+
+    private String getAudioPath(String url, String memberId, String messageId) throws IOException, UnsupportedAudioFileException {
+        System.setProperty("http.agent", "Chrome");
+        InputStream in = new URL(url).openStream();
+        Files.copy(in, Paths.get(memberId + messageId + ".mp3"), StandardCopyOption.REPLACE_EXISTING);
+        final File file = new File(memberId + messageId + ".mp3");
+        final AudioInputStream inputStream = getAudioInputStream(file);
+        AudioSystem.write(getAudioInputStream(getOutFormat(inputStream.getFormat(), VoiceReference.getVoiceRef(memberId)), inputStream), AudioFileFormat.Type.WAVE, new File(memberId + messageId + ".wav"));
+        new Thread(() -> {
+            try {
+                Thread.sleep(2 * 60 * 1000);
+            } catch (InterruptedException e) {
+                System.out.print(e.getMessage());
+            }
+            try {
+                Files.delete(Paths.get(memberId + messageId + ".mp3"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            try {
+                Files.delete(Paths.get(memberId + messageId + ".wav"));
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        }).start();
+        return memberId + messageId + ".wav";
+    }
+
+    private static AudioFormat getOutFormat(AudioFormat inFormat, int voiceRef) {
+        int add;
+        switch (voiceRef) {
+            default:
+                add = 0;
+                break;
+            case 2:
+                add = 3000;
+                break;
+            case 3:
+                add = 6000;
+                break;
+            case 4:
+                add = -3000;
+                break;
+        }
+        return new AudioFormat(PCM_SIGNED, inFormat.getSampleRate() + add, 16, inFormat.getChannels(), inFormat.getFrameSize(), inFormat.getFrameRate(),
+                inFormat.isBigEndian());
+    }
 }
 
 class Acronym {
@@ -212,10 +283,8 @@ class Acronym {
      * @return Sentence without slang
      */
     static String replaceAcronym(String sentence) {
-        if (words == null) {
-            words = new ArrayList<>();
+        if (words == null)
             load();
-        }
         sentence = " " + sentence + " ";
         for (WordPair w : words) {
             sentence = sentence.replace(" " + w.getSlang() + " ", " " + w.getFormal() + " ");
@@ -226,14 +295,14 @@ class Acronym {
     /**
      * Define a new slang
      *
-     * @param acronym  Slang need to be defined
-     * @param formal Formal word corresponding to Slang
+     * @param acronym Slang need to be defined
+     * @param formal  Formal word corresponding to Slang
      */
     static void addAcronym(String acronym, String formal) {
-        for (WordPair w : words)
-            if (w.getSlang().equals(acronym)) return;
+        if (words == null) load();
+        words.removeIf(x -> x.getSlang().equals(acronym));
         words.add(new WordPair(acronym, formal));
-        save();
+        JawMySQL.addAcronym(acronym, formal);
     }
 
     /**
@@ -242,6 +311,7 @@ class Acronym {
      * @param acronym Slang need to be removed
      */
     static void removeAcronym(String acronym) {
+        if (words == null) load();
         for (int i = 0; i < words.size(); i++) {
             WordPair w = words.get(i);
             if (w.getSlang().equals(acronym)) {
@@ -249,34 +319,58 @@ class Acronym {
                 break;
             }
         }
-        save();
-    }
-
-    /**
-     * Save defined slang to disk
-     */
-    private static void save() {
-        BackupAndRestore.saveAcronym(words);
+        JawMySQL.removeAcronym(acronym);
     }
 
     /**
      * Load defined slang for use
      */
     private static void load() {
-        words.clear();
-        words.addAll(BackupAndRestore.loadAcronym());
+        if (words != null)
+            words.clear();
+        else words = new ArrayList<>();
+        words.addAll(JawMySQL.loadAcronym());
     }
 
-    public static void list(TextChannel textChannel) {
+    static void list(TextChannel textChannel) {
         if (words == null) {
             words = new ArrayList<>();
             load();
         }
         StringBuilder output = new StringBuilder(">>> ");
-        for (WordPair wordPair : words) {
-            output.append(wordPair.getSlang()).append("\t").append(wordPair.getFormal()).append("\n");
-        }
+        words.stream().sorted().forEach(wordPair -> output.append(wordPair.getSlang()).append("\t").append(wordPair.getFormal()).append("\n"));
         textChannel.sendMessage(output).queue();
+    }
+}
+
+class VoiceReference {
+    private static ArrayList<UserReference> voiceRefs = null;
+
+    static void modifyUserRef(String userId, short voiceRef) {
+        if (voiceRefs == null) load();
+
+        voiceRefs.removeIf(x -> x.getUserId().equals(userId));
+
+        voiceRefs.add(new UserReference(userId, voiceRef));
+        JawMySQL.modifyUserReference(userId, voiceRef);
+    }
+
+    private static void load() {
+        if (voiceRefs != null)
+            voiceRefs.clear();
+        else voiceRefs = new ArrayList<>();
+        voiceRefs.addAll(JawMySQL.loadUserReference());
+    }
+
+    static short getVoiceRef(String userId) {
+        if (voiceRefs == null) load();
+        for (UserReference x : voiceRefs) {
+            if (x.getUserId().equals(userId)) {
+                return x.getVoiceRef();
+            }
+        }
+        modifyUserRef(userId, (short) 1);
+        return 1;
     }
 }
 

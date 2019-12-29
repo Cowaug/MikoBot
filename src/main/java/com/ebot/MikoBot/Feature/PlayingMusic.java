@@ -130,7 +130,7 @@ public class PlayingMusic {
                                     mediaInstance.getController().pause();
                                     mediaInstance.getController().resume();
                                 } catch (Exception ex) {
-                                    System.out.println(ex.getMessage());
+                                    ex.printStackTrace();
                                     react(event, ":x:");
                                     return;
                                 }
@@ -162,7 +162,7 @@ public class PlayingMusic {
                         }
                         react(event, ":ok_hand:");
                     } catch (Exception ex) {
-                        System.out.println(ex.getMessage());
+                        ex.printStackTrace();
                         react(event, ":boom:");
                         return;
                     }

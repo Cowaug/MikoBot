@@ -1,13 +1,13 @@
 package com.ebot.MikoBot.Ultils.MediaPlayer;
 
 import com.ebot.MikoBot.BotInstance;
+import com.ebot.MikoBot.Ultils.Entities.Queue;
 import com.ebot.MikoBot.Ultils.TextChannelManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrackEndReason;
-import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ public class TrackController extends AudioEventAdapter {
     AudioPlayer player;
     Queue queue;
     private boolean loopOne = false;
-    private boolean loopAll = true;
+    private boolean loopAll = false;
     private MessageReceivedEvent lastEvent = null;
     private BotInstance botInstance = null;
     private boolean lock = false;
@@ -30,6 +30,7 @@ public class TrackController extends AudioEventAdapter {
      */
     public TrackController(AudioPlayer player) {
         this.player = player;
+        this.loopAll=true;
         this.queue = new Queue();
     }
 
@@ -264,7 +265,7 @@ public class TrackController extends AudioEventAdapter {
             TextChannelManager.updateMessage(botInstance,lastEvent,getPlayingList().get(page));
             oldPage = page;
         } catch (IndexOutOfBoundsException ex) {
-            System.out.println(ex.getMessage());
+            ex.printStackTrace();
         }
     }
 
@@ -273,69 +274,3 @@ public class TrackController extends AudioEventAdapter {
     }
 }
 
-class Queue {
-    private ArrayList<AudioTrack> audioTracks = new ArrayList<>();
-    private int currentIndex = -1;
-
-    void add(AudioTrack audioTrack) {
-        if (audioTrack == null) return;
-        audioTracks.add(audioTrack);
-    }
-
-    AudioTrack getNext() {
-        currentIndex++;
-        if (currentIndex < audioTracks.size())
-            return audioTracks.get(currentIndex).makeClone();
-        if (audioTracks.size() == 0)
-            currentIndex = -1;
-        else currentIndex = audioTracks.size();
-        return null;
-    }
-
-    AudioTrack getCurrent() {
-        if (currentIndex >= audioTracks.size() || currentIndex < 0) return null;
-        return audioTracks.get(currentIndex).makeClone();
-    }
-
-    AudioTrack getNextLoop() {
-        currentIndex++;
-        if (currentIndex >= audioTracks.size())
-            currentIndex = 0;
-        return audioTracks.get(currentIndex).makeClone();
-    }
-
-    AudioTrack pull() {
-        if (audioTracks.size() <= 0) return null;
-        AudioTrack audioTrack = audioTracks.get(0);
-        audioTracks.remove(0);
-        return audioTrack.makeClone();
-    }
-
-    AudioTrack get(int index) {
-        currentIndex = index - 1;
-        return getNext();
-    }
-
-    void remove(int index) {
-        audioTracks.remove(index);
-        if (currentIndex >= index)
-            currentIndex--;
-    }
-
-    void clearAll() {
-        audioTracks.clear();
-        currentIndex = -1;
-    }
-
-    ArrayList<AudioTrack> getList() {
-        return audioTracks;
-    }
-
-    int getCurrentIndex() {
-        return currentIndex;
-    }
-
-    int getSize() {
-        return audioTracks.size();
-    }
-}

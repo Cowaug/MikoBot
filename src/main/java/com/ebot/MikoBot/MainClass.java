@@ -31,14 +31,21 @@ public class MainClass {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
-        try {
-            new Thread(() -> ttsBot = new BotInstance(args[0],BotInstance.TTS,"VN")).start();
-            new Thread(() -> musicBot = new BotInstance(args[1],BotInstance.MUSIC,"VN")).start();
-        } catch (Exception ex) {
-            new Thread(() -> ttsBot = new BotInstance(System.getenv("TTS_BOT_TOKEN"),BotInstance.TTS,System.getenv("REGION"))).start();
-            new Thread(() -> musicBot = new BotInstance(System.getenv("MUSIC_BOT_TOKEN"),BotInstance.MUSIC,System.getenv("REGION"))).start();
-            System.out.println(ex.getMessage());
-        }
+        new Thread(() -> {
+            try {
+                ttsBot = new BotInstance(args[0],BotInstance.TTS,"VN");
+            }catch (Exception ex){
+                ttsBot = new BotInstance(System.getenv("TTS_BOT_TOKEN"),BotInstance.TTS,System.getenv("REGION"));
+            }
+        }).start();
+
+        new Thread(() -> {
+            try {
+                musicBot = new BotInstance(args[1],BotInstance.MUSIC,"VN");
+            }catch (Exception ex){
+                musicBot = new BotInstance(System.getenv("MUSIC_BOT_TOKEN"),BotInstance.MUSIC,System.getenv("REGION"));
+            }
+        }).start();
     }
 
     public static void reboot(String mode){

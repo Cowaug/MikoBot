@@ -23,11 +23,11 @@ public class TextChannelManager {
                 try {
                     botInstance.getLastTextChannel(event).deleteMessageById(botInstance.getLastBotsMessageId(event)).queue();
                 } catch (Exception ex) {
-                    System.out.println(ex.getMessage());
+                    ex.printStackTrace();
                 }
             }
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            ex.printStackTrace();
             event.getTextChannel().sendMessage(message).queue();
         }
 

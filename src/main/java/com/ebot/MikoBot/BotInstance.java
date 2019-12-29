@@ -43,7 +43,7 @@ public class BotInstance {
                     .setActivity(Activity.playing(mode + " @" + region))
                     .build().awaitReady();
         } catch (LoginException e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -90,7 +90,7 @@ public class BotInstance {
             }
 
         } catch (Exception ex) {
-            System.out.println(ex.getMessage());
+            ex.printStackTrace();
             return null;
         }
     }
