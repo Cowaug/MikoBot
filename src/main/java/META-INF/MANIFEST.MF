@@ -1,3 +1,2 @@
 Manifest-Version: 1.0
-Main-Class: com.ebot.MikoBot.MainClass
-
+Main-Class: com.ebot.MikoBot.testClass

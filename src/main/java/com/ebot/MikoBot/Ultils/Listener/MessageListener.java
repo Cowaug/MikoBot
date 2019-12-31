@@ -1,7 +1,12 @@
 package com.ebot.MikoBot.Ultils.Listener;
 
+import net.dv8tion.jda.api.entities.ChannelType;
+import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
+import org.jetbrains.annotations.NotNull;
+
+import java.util.Objects;
 
 
 public class MessageListener extends ListenerAdapter {
@@ -12,7 +17,8 @@ public class MessageListener extends ListenerAdapter {
      * @param event Message received event
      */
     @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
+        event.getMessage().getReactions().forEach(x->System.out.print(x.getReactionEmote().getEmoji()));
 //        if (event.isFromType(ChannelType.PRIVATE)) {
 //            System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
 //                    event.getMessage().getContentDisplay());

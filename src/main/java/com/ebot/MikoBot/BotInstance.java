@@ -9,12 +9,12 @@ import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
 import net.dv8tion.jda.api.entities.Guild;
 import net.dv8tion.jda.api.entities.TextChannel;
-import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.Compression;
 
-import javax.security.auth.login.LoginException;
+import java.net.JarURLConnection;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Objects;
 
 public class BotInstance {
@@ -40,11 +40,9 @@ public class BotInstance {
             jda = new JDABuilder(AccountType.BOT).setToken(token)
                     .setBulkDeleteSplittingEnabled(false)
                     .setCompression(Compression.NONE)
-                    .setActivity(Activity.playing(mode + " @" + region))
+                    .setActivity(Activity.playing(mode + " - v" + getVersion() + "." + region.substring(0, 2).toUpperCase()))
                     .build().awaitReady();
-        } catch (LoginException e) {
-            e.printStackTrace();
-        } catch (InterruptedException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -60,38 +58,42 @@ public class BotInstance {
         }
     }
 
-    private void shutdown() {
-        jda.shutdownNow();
-    }
-
-    public void restart() {
-        shutdown();
-        build();
-    }
-
-    public MediaInstance get(MessageReceivedEvent event) {
+    private static String getVersion() {
+        long time = 0;
         try {
-            VoiceChannel voiceChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
-            GuildInstance guildInstance;
+            String rn = MainClass.class.getName().replace('.', '/') + ".class";
+            JarURLConnection j = (JarURLConnection) Objects.requireNonNull(MainClass.class.getClassLoader().getResource(rn)).openConnection();
+            time = j.getJarFile().getEntry("META-INF/MANIFEST.MF").getTime();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        Calendar c = Calendar.getInstance();
+        //Set time in milliseconds
+        c.setTimeInMillis(time);
+        int mYear = c.get(Calendar.YEAR);
+        int mMonth = c.get(Calendar.MONTH) + 1;
+        int mDay = c.get(Calendar.DAY_OF_MONTH);
+        return String.valueOf(mYear).substring(2) + "." +
+                (mMonth < 10 ? "0" : "") + mMonth +
+                (mDay < 10 ? "0" : "") + mDay;
+    }
 
-            //create if not exist
-            if ((guildInstance = findGuild(event.getGuild())) == null) {
-                guildInstances.add(guildInstance = new GuildInstance(event));
-            } else {
-                guildInstance.update(event);
-            }
+    public MediaInstance getMediaInstance(MessageReceivedEvent event) {
+        GuildInstance guildInstance;
 
-            //create
-            if (guildInstance.getMediaInstance() == null) {
-                guildInstance.setMediaInstance(new MediaInstance(event.getGuild(), mode));
-                return guildInstance.getMediaInstance();
-            } else {
-                return guildInstance.getMediaInstance();
-            }
+        //create guildInstance if not exist
+        if ((guildInstance = findGuild(event.getGuild())) == null) {
+            guildInstances.add(guildInstance = new GuildInstance(event));
+        } else {
+            guildInstance.update(event);
+        }
 
-        } catch (Exception ex) {
-            ex.printStackTrace();
-            return null;
+        //create mediaInstance if not exist in guildInstance
+        if (guildInstance.getMediaInstance() == null) {
+            guildInstance.setMediaInstance(new MediaInstance(event.getGuild(), mode));
+            return guildInstance.getMediaInstance();
+        } else {
+            return guildInstance.getMediaInstance();
         }
     }
 
@@ -156,15 +158,15 @@ class GuildInstance {
         this.mediaInstance = mediaInstance;
     }
 
-    public boolean isLastSendByBot() {
+    boolean isLastSendByBot() {
         return isLastSendByBot;
     }
 
-    public String getLastBotsMessageId() {
+    String getLastBotsMessageId() {
         return lastBotsMessageId;
     }
 
-    public TextChannel getLastTextChannel() {
+    TextChannel getLastTextChannel() {
         return lastTextChannel;
     }
 }

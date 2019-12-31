@@ -4,13 +4,12 @@ import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
 public class TtsController extends TrackController {
-
     /**
      * Create the track scheduler for a player
      *
      * @param player The audio player this scheduler uses
      */
-    public TtsController(AudioPlayer player) {
+    TtsController(AudioPlayer player) {
         super(player);
     }
 

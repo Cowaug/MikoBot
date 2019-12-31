@@ -16,21 +16,20 @@ public class TrackController extends AudioEventAdapter {
     AudioPlayer player;
     Queue queue;
     private boolean loopOne = false;
-    private boolean loopAll = false;
+    private boolean loopAll;
     private MessageReceivedEvent lastEvent = null;
     private BotInstance botInstance = null;
     private boolean lock = false;
     private int oldPage = 0;
-
 
     /**
      * Create the track scheduler for a player
      *
      * @param player The audio player this scheduler uses
      */
-    public TrackController(AudioPlayer player) {
+    TrackController(AudioPlayer player) {
         this.player = player;
-        this.loopAll=true;
+        this.loopAll = true;
         this.queue = new Queue();
     }
 
@@ -267,10 +266,6 @@ public class TrackController extends AudioEventAdapter {
         } catch (IndexOutOfBoundsException ex) {
             ex.printStackTrace();
         }
-    }
-
-    public void update(){
-        sendMessage(oldPage);
     }
 }
 

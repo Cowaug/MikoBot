@@ -1,12 +1,15 @@
 package com.ebot.MikoBot.Feature;
 
 import com.ebot.MikoBot.BotInstance;
+import com.ebot.MikoBot.MainClass;
 import com.ebot.MikoBot.Ultils.Entities.UserReference;
 import com.ebot.MikoBot.Ultils.Entities.WordPair;
 import com.ebot.MikoBot.Ultils.JawMySQL;
 import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
+import com.ebot.MikoBot.Ultils.TextChannelManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
+import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 import javax.sound.sampled.*;
@@ -60,119 +63,141 @@ public class TextToSpeech {
      *
      * @param event The message event that need to be spoken
      */
-    public void start(MessageReceivedEvent event) {
-        Member member = event.getMember();
-        assert member != null;
-        String memberId = member.getId();
-        TextChannel textChannel = event.getTextChannel();
-        String messageId = event.getMessageId();
-        String content = event.getMessage().getContentDisplay();
+    public void execute(MessageReceivedEvent event) {
+        try {
+            Member member = event.getMember();
+            assert member != null;
+            String memberId = member.getId();
+            VoiceChannel voiceChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
+            TextChannel textChannel = event.getTextChannel();
+            String messageId = event.getMessageId();
+            String content = event.getMessage().getContentDisplay();
 
-        boolean autoIgnore;
+            boolean autoIgnore;
 
-        String TTS_PREFIX = ".";
-        String[] IGNORE_KEYWORD = {MEDIA_PREFIX, "`", "http://", "https://"};
+            String TTS_PREFIX = ".";
+            String[] IGNORE_KEYWORD = {MEDIA_PREFIX, "`", "http://", "https://"};
 
-        if (content.startsWith(TTS_PREFIX)) {
-            autoIgnore = false;
-            content = content.replaceFirst(TTS_PREFIX, "");
-        } else if (Arrays.stream(IGNORE_KEYWORD).noneMatch(content::startsWith) && autoTTS.contains(memberId)) {
-            autoIgnore = true;
-            if (autoTTSDelete.contains(memberId))
-                content = "," + content;
-            else content = "." + content;
-        } else return;
+            if (content.startsWith(TTS_PREFIX)) {
+                autoIgnore = false;
+                content = content.replaceFirst(TTS_PREFIX, "");
+            } else if (Arrays.stream(IGNORE_KEYWORD).noneMatch(content::startsWith) && autoTTS.contains(memberId)) {
+                autoIgnore = true;
+                if (autoTTSDelete.contains(memberId))
+                    content = "," + content;
+                else content = "." + content;
+            } else return;
 
-        MediaInstance mediaInstance = botInstance.get(event);
-        if (mediaInstance != null) {
             String cmd = getCmd(content);
             content = content.replaceFirst(cmd, "");
-            switch (cmd) {
-                case ",":
-                    textChannel.deleteMessageById(messageId).queue();
-                    GoogleTranslate(event, mediaInstance, content);
-                    return;
-                case ".":
-                    GoogleTranslate(event, mediaInstance, content);
-                    return;
-                case "lockme":
-                    if (!autoTTS.contains(memberId)) {
-                        autoTTS.add(memberId);
-                        JawMySQL.addToTable("autoTTS", memberId);
-                    }
-                    break;
-                case "unlockme":
-                    autoTTS.remove(memberId);
-                    JawMySQL.removeFromTable("autoTTS", memberId);
-                    break;
-                case "add":
-                    content = content.replaceFirst(" ", "");
-                    if (!content.equals("")) {
-                        String[] str = {null, null};
+            String[] needInVoiceCommand = ". , skip voiceDemo".split(" ");
 
-                        str[0] = content.substring(0, content.indexOf(" "));
-                        str[1] = content.replaceFirst(str[0], "");
+            MediaInstance mediaInstance = botInstance.getMediaInstance(event);
 
-                        if (str[0].equals("") || str[1].equals("")) {
+            if (voiceChannel != null || !Arrays.asList(needInVoiceCommand).contains(cmd)) {
+                switch (cmd) {
+                    case ",":
+                        textChannel.deleteMessageById(messageId).queue();
+                    case ".":
+                        playTTS(voiceChannel, mediaInstance, GoogleTranslate(memberId, messageId, content));
+                        return;
+                    case "lockme":
+                        if (!autoTTS.contains(memberId)) {
+                            autoTTS.add(memberId);
+                            JawMySQL.addToTable("autoTTS", memberId);
+                        }
+                        break;
+                    case "unlockme":
+                        autoTTS.remove(memberId);
+                        JawMySQL.removeFromTable("autoTTS", memberId);
+                        break;
+                    case "add":
+                        content = content.replaceFirst(" ", "");
+                        if (!content.equals("")) {
+                            String[] str = {null, null};
+
+                            str[0] = content.substring(0, content.indexOf(" "));
+                            str[1] = content.replaceFirst(str[0], "");
+
+                            if (str[0].equals("") || str[1].equals("")) {
+                                react(event, ":x:");
+                                return;
+                            }
+
+                            Acronym.addAcronym(str[0], str[1]);
+                            break;
+
+                        } else {
                             react(event, ":x:");
                             return;
                         }
-
-                        Acronym.addAcronym(str[0], str[1]);
-                        break;
-
-                    } else {
-                        react(event, ":x:");
-                        return;
+                    case "remove": {
+                        if (!content.equals("")) {
+                            Acronym.removeAcronym(content.replace(" ", ""));
+                            break;
+                        } else {
+                            react(event, ":x:");
+                            return;
+                        }
                     }
-                case "remove": {
-                    if (!content.equals("")) {
-                        Acronym.removeAcronym(content.replace(" ", ""));
+                    case "delete":
+                        if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
+                        JawMySQL.addToTable("autoTTSDelete", memberId);
                         break;
-                    } else {
-                        react(event, ":x:");
+                    case "keep":
+                        autoTTSDelete.remove(memberId);
+                        JawMySQL.removeFromTable("autoTTSDelete", memberId);
+                        break;
+                    case "setVoice":
+                        short voiceRef = 1;
+                        try {
+                            voiceRef = Short.parseShort(content.replace(" ", ""));
+                        } catch (Exception ex) {
+                            System.out.print(ex.getMessage());
+                        }
+                        VoiceReference.modifyUserRef(memberId, voiceRef);
+                        break;
+                    case "list":
+                        Acronym.list(textChannel);
+                        break;
+                    case "info":
+                        TextChannelManager.updateMessage(botInstance, event, TextChannelManager.getInfoTTS());
+                        break;
+                    case "voiceDemo":
+                        String demoText = "voice thứ ";
+                        int i;
+                        try {
+                            i = Integer.parseInt(content.replace(" ", ""));
+                            int tmp = i > 4 ? 0 : i;
+                            tmp = Math.max(1, tmp);
+                            playTTS(voiceChannel, mediaInstance, GoogleTranslate("xxxxxxxxxxxxxxxxx" + tmp, messageId, demoText + i));
+                        } catch (Exception ex) {
+                            System.out.print(ex.getMessage());
+                            for (i = 1; i <= 4; i++) {
+                                playTTS(voiceChannel, mediaInstance, GoogleTranslate("xxxxxxxxxxxxxxxxx" + i, messageId, demoText + i));
+                            }
+                        }
+                        break;
+                    case "skip":
+                        mediaInstance.getController().nextTrack(false);
+                        break;
+                    case "leave":
+                        mediaInstance.disconnect();
+                        break;
+                    default:
+                        react(event, ":question:");
                         return;
-                    }
                 }
-                case "delete":
-                    if (!autoTTSDelete.contains(memberId)) autoTTSDelete.add(memberId);
-                    JawMySQL.addToTable("autoTTSDelete", memberId);
-                    break;
-                case "keep":
-                    autoTTSDelete.remove(memberId);
-                    JawMySQL.removeFromTable("autoTTSDelete", memberId);
-                    break;
-                case "setVoice":
-                    short voiceRef = 1;
-                    try {
-                        voiceRef = Short.parseShort(content.replace(" ", ""));
-                    } catch (Exception ex) {
-                        System.out.print(ex.getMessage());
-                    }
-                    VoiceReference.modifyUserRef(memberId, voiceRef);
-                    break;
-                case "list":
-                    Acronym.list(textChannel);
-                    break;
-//               case "reboot_":
-//                        MainClass.reboot(TTS);
-//                        break;
-//                case "info":
-//                    TextChannelManager.updateMessage(botInstance, event, TextChannelManager.getInfoTTS());
-//                    break;
-                case "skip":
-                    mediaInstance.getController().nextTrack(false);
-                    break;
-                case "leave":
-                    mediaInstance.disconnect();
-                    break;
-                default:
-                    react(event, ":x:");
-                    return;
+                react(event, ":ok_hand:");
+            } else {
+                if (!autoIgnore) {
+                    react(event, ":headphones:");
+                    react(event, ":exclamation:");
+                }
             }
-            react(event, ":ok_hand:");
-        } else {
-            if (!autoIgnore) react(event, ":x:");
+        } catch (Exception e) {
+            e.printStackTrace();
+            react(event, ":boom:");
         }
     }
 
@@ -180,10 +205,9 @@ public class TextToSpeech {
      * Speak the text using the server's player
      * created previously
      *
-     * @param mediaInstance Server's player
-     * @param text          Text user wants to speak
+     * @param text Text user wants to speak
      */
-    private void GoogleTranslate(MessageReceivedEvent event, MediaInstance mediaInstance, String text) {
+    private String GoogleTranslate(String memberId, String messageId, String text) {
         text = Acronym.replaceAcronym(text);
         String language = VN;
         if (text.startsWith(EN + " ")) {
@@ -199,12 +223,18 @@ public class TextToSpeech {
 
         String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=" + language + "&q=";
         try {
-            String fileUrl = getAudioPath(url + URLEncoder.encode(text.replace("@", "@ "), "UTF-8"), Objects.requireNonNull(event.getMember()).getId(), event.getMessageId());
-            mediaInstance.reconnect(Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel());
-            mediaInstance.play(fileUrl, null);
+            return getAudioPath(url + URLEncoder.encode(text.replace("@", "@ "), "UTF-8"), memberId, messageId, VoiceReference.getVoiceRef(memberId));
+
         } catch (Exception e) {
             e.printStackTrace();
         }
+        return null;
+    }
+
+    private void playTTS(VoiceChannel voiceChannel, MediaInstance mediaInstance, String url) {
+        if (url == null) return;
+        mediaInstance.reconnect(voiceChannel);
+        mediaInstance.play(url, null);
     }
 
     /**
@@ -224,13 +254,13 @@ public class TextToSpeech {
         }
     }
 
-    private String getAudioPath(String url, String memberId, String messageId) throws IOException, UnsupportedAudioFileException {
+    private String getAudioPath(String url, String memberId, String messageId, short voiceRef) throws IOException, UnsupportedAudioFileException {
         System.setProperty("http.agent", "Chrome");
         InputStream in = new URL(url).openStream();
         Files.copy(in, Paths.get(memberId + messageId + ".mp3"), StandardCopyOption.REPLACE_EXISTING);
         final File file = new File(memberId + messageId + ".mp3");
         final AudioInputStream inputStream = getAudioInputStream(file);
-        AudioSystem.write(getAudioInputStream(getOutFormat(inputStream.getFormat(), VoiceReference.getVoiceRef(memberId)), inputStream), AudioFileFormat.Type.WAVE, new File(memberId + messageId + ".wav"));
+        AudioSystem.write(getAudioInputStream(getOutFormat(inputStream.getFormat(), voiceRef), inputStream), AudioFileFormat.Type.WAVE, new File(memberId + messageId + ".wav"));
         new Thread(() -> {
             try {
                 Thread.sleep(2 * 60 * 1000);
@@ -286,9 +316,10 @@ class Acronym {
         if (words == null)
             load();
         sentence = " " + sentence + " ";
-        for (WordPair w : words) {
-            sentence = sentence.replace(" " + w.getSlang() + " ", " " + w.getFormal() + " ");
-        }
+        String[] specialChar = {" ", ",", ".", "?"};
+        for (WordPair w : words)
+            for (String s : specialChar)
+                sentence = sentence.replace(s + w.getSlang() + s, s + w.getFormal() + s);
         return sentence.substring(1, sentence.length() - 1);
     }
 
@@ -312,13 +343,7 @@ class Acronym {
      */
     static void removeAcronym(String acronym) {
         if (words == null) load();
-        for (int i = 0; i < words.size(); i++) {
-            WordPair w = words.get(i);
-            if (w.getSlang().equals(acronym)) {
-                words.remove(i);
-                break;
-            }
-        }
+        words.removeIf(x -> x.getSlang().equals(acronym));
         JawMySQL.removeAcronym(acronym);
     }
 
@@ -333,10 +358,8 @@ class Acronym {
     }
 
     static void list(TextChannel textChannel) {
-        if (words == null) {
-            words = new ArrayList<>();
+        if (words == null)
             load();
-        }
         StringBuilder output = new StringBuilder(">>> ");
         words.stream().sorted().forEach(wordPair -> output.append(wordPair.getSlang()).append("\t").append(wordPair.getFormal()).append("\n"));
         textChannel.sendMessage(output).queue();
@@ -348,9 +371,7 @@ class VoiceReference {
 
     static void modifyUserRef(String userId, short voiceRef) {
         if (voiceRefs == null) load();
-
         voiceRefs.removeIf(x -> x.getUserId().equals(userId));
-
         voiceRefs.add(new UserReference(userId, voiceRef));
         JawMySQL.modifyUserReference(userId, voiceRef);
     }

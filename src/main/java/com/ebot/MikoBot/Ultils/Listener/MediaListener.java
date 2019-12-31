@@ -3,6 +3,7 @@ package com.ebot.MikoBot.Ultils.Listener;
 import com.ebot.MikoBot.BotInstance;
 import com.ebot.MikoBot.Feature.PlayingMusic;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
+import org.jetbrains.annotations.NotNull;
 
 public class MediaListener extends MessageListener {
     private PlayingMusic playingMusic;
@@ -12,8 +13,8 @@ public class MediaListener extends MessageListener {
     }
 
     @Override
-    public void onMessageReceived(MessageReceivedEvent event) {
+    public void onMessageReceived(@NotNull MessageReceivedEvent event) {
         super.onMessageReceived(event);
-        playingMusic.start(event);
+        playingMusic.execute(event);
     }
 }

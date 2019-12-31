@@ -1,21 +1,22 @@
 package com.ebot.MikoBot.Feature;
 
 import com.ebot.MikoBot.BotInstance;
+import com.ebot.MikoBot.MainClass;
 import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
 import com.ebot.MikoBot.Ultils.TextChannelManager;
-import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
+import java.lang.reflect.Array;
+import java.util.Arrays;
 import java.util.Objects;
 
+import static com.ebot.MikoBot.BotInstance.MUSIC;
 import static com.ebot.MikoBot.Ultils.TextChannelManager.react;
 
 public class PlayingMusic {
     static String MEDIA_PREFIX = "/";
-    private TextChannel textChannel;
-    private MediaInstance mediaInstance;
     private BotInstance botInstance;
 
     public PlayingMusic(BotInstance botInstance) {
@@ -27,33 +28,26 @@ public class PlayingMusic {
      *
      * @param event User event which trigger this
      */
-    public void start(MessageReceivedEvent event) {
-        Member member = event.getMember();
-        assert member != null;
-
-        textChannel = event.getTextChannel();
-
+    public void execute(final MessageReceivedEvent event) {
         String[] message = event.getMessage().getContentDisplay().split("\n");
+        String[] needInVoiceCommand = "play remove setVol stop next loopOne loopAll loopOff clear pause resume join queue page".split(" ");
 
         new Thread(() -> {
-            mediaInstance = botInstance.get(event);
-            VoiceChannel voiceChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
+            try {
+                TextChannel textChannel = event.getTextChannel();
+                MediaInstance mediaInstance = botInstance.getMediaInstance(event);
+                VoiceChannel voiceChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
 
-            for (String s : message) {
-                if (!s.startsWith(MEDIA_PREFIX)) {
-                    continue;
-                }
-                String content = s.substring(1);
+                for (String s : message) {
+                    if (!s.startsWith(MEDIA_PREFIX)) continue;
+                    mediaInstance.getController().setLastEvent(botInstance, event);
 
-                String cmd = content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length());
+                    String content = s.substring(1);
+                    String cmd = content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length());
+                    content = content.replaceFirst(cmd, "").replace(" ", "");
 
-                content = content.replaceFirst(cmd, "").replace(" ", "");
-                mediaInstance.getController().setLastEvent(botInstance, event);
-
-                if (mediaInstance != null && voiceChannel != null) {
-                    if(!cmd.equals("info")) mediaInstance.reconnect(voiceChannel);
-
-                    try {
+                    if (voiceChannel != null || !Arrays.asList(needInVoiceCommand).contains(cmd)) {
+                        if (Arrays.asList(needInVoiceCommand).contains(cmd)) mediaInstance.reconnect(voiceChannel);
                         switch (cmd) {
                             case "play":
                                 if (!content.equals("")) {
@@ -75,7 +69,6 @@ public class PlayingMusic {
                                     return;
                                 }
                             case "remove":
-
                                 int i;
                                 if (!content.equals("")) {
                                     if ((i = Integer.parseInt(content)) > 0)
@@ -131,19 +124,15 @@ public class PlayingMusic {
                                     mediaInstance.getController().resume();
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
-                                    react(event, ":x:");
+                                    react(event, ":boom:");
                                     return;
                                 }
                                 break;
-//                            case "reboot_":
-////                                MainClass.reboot(MUSIC);
-////                                break;
                             case "info":
-                                TextChannelManager.updateMessage(botInstance,event,TextChannelManager.getInfoMusic());
+                                TextChannelManager.updateMessage(botInstance, event, TextChannelManager.getInfoMusic());
                                 break;
                             case "page":
                             case "queue":
-
                                 int page;
                                 if (content.equals("")) {
                                     mediaInstance.getController().getQueue(-1);
@@ -155,22 +144,19 @@ public class PlayingMusic {
                                     react(event, ":x:");
                                     return;
                                 }
-
                             default:
-                                react(event, ":x:");
+                                react(event, ":question:");
                                 return;
                         }
                         react(event, ":ok_hand:");
-                    } catch (Exception ex) {
-                        ex.printStackTrace();
-                        react(event, ":boom:");
-                        return;
+                    } else {
+                        react(event, ":headphones:");
+                        react(event, ":exclamation:");
                     }
-
-                } else {
-                    react(event, ":x:");
                 }
-
+            } catch (Exception ex) {
+                ex.printStackTrace();
+                react(event, ":boom:");
             }
         }).start();
     }

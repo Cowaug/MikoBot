@@ -24,8 +24,11 @@ public class Queue {
     }
 
     public AudioTrack getCurrent() {
-        if (currentIndex >= audioTracks.size() || currentIndex < 0) return null;
-        return audioTracks.get(currentIndex).makeClone();
+        try{
+            return audioTracks.get(currentIndex).makeClone();
+        } catch (Exception ignored){
+            return null;
+        }
     }
 
     public AudioTrack getNextLoop() {

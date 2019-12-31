@@ -22,6 +22,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.nio.ByteBuffer;
 
+import static com.ebot.MikoBot.BotInstance.MUSIC;
 import static com.ebot.MikoBot.BotInstance.TTS;
 
 public class MediaInstance {
@@ -34,8 +35,7 @@ public class MediaInstance {
      *
      * @param guild        server
      */
-    public MediaInstance(Guild guild, String TYPE) {
-
+    public MediaInstance(Guild guild, String botMode) {
         playerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(playerManager);
         playerManager.getConfiguration().setResamplingQuality(AudioConfiguration.ResamplingQuality.HIGH);
@@ -50,10 +50,10 @@ public class MediaInstance {
 
         AudioPlayer player = playerManager.createPlayer();
 
-        if (TYPE.equals(TTS)) controller = new TtsController(player);
+        if (botMode.equals(TTS)) controller = new TtsController(player);
         else controller = new TrackController(player);
-
         player.addListener(controller);
+
         controller.setVolume(25);
         audioManager = guild.getAudioManager();
         audioManager.setSendingHandler(new AudioPlayerSendHandler(player));
