@@ -33,7 +33,7 @@ public class MediaInstance {
     /**
      * Create specific media player for a server
      *
-     * @param guild        server
+     * @param guild Server in Discord
      */
     public MediaInstance(Guild guild, String botMode) {
         playerManager = new DefaultAudioPlayerManager();

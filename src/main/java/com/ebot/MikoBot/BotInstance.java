@@ -26,38 +26,44 @@ public class BotInstance {
     private String region;
     private ArrayList<GuildInstance> guildInstances = new ArrayList<>();
 
+    /**
+     * Create Bot Instance
+     * @param token Bot secret token
+     * @param mode Bot's mode (MUSIC / TTS)
+     * @param region Bot's Region (base on token on HEROKU)
+     */
     BotInstance(String token, String mode, String region) {
         System.out.println("CREATING " + mode.toUpperCase() + " BOT...");
         this.token = token;
         this.mode = mode;
         this.region = region;
-        build();
-        setMode(mode);
-    }
 
-    private void build() {
+        // Building bot base on token
         try {
             jda = new JDABuilder(AccountType.BOT).setToken(token)
                     .setBulkDeleteSplittingEnabled(false)
                     .setCompression(Compression.NONE)
                     .setActivity(Activity.playing(mode + " - v" + getVersion() + "." + region.substring(0, 2).toUpperCase()))
                     .build().awaitReady();
+
+            // Add listener base on provided mode
+            switch (mode) {
+                case MUSIC:
+                    jda.addEventListener(new MediaListener(this));
+                    break;
+                case TTS:
+                    jda.addEventListener(new TTSListener(this));
+                    break;
+            }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private void setMode(String mode) {
-        switch (mode) {
-            case MUSIC:
-                jda.addEventListener(new MediaListener(this));
-                break;
-            case TTS:
-                jda.addEventListener(new TTSListener(this));
-                break;
-        }
-    }
-
+    /**
+     * Get version of Bot base on Bot's Build Date
+     * @return Bot's Build Date + Region
+     */
     private static String getVersion() {
         long time = 0;
         try {
@@ -74,18 +80,19 @@ public class BotInstance {
         int mMonth = c.get(Calendar.MONTH) + 1;
         int mDay = c.get(Calendar.DAY_OF_MONTH);
         return String.valueOf(mYear).substring(2) + "." +
-                (mMonth < 10 ? "0" : "") + mMonth +
+                (mMonth < 10 ? "0" : "") + mMonth + "." +
                 (mDay < 10 ? "0" : "") + mDay;
     }
+
 
     public MediaInstance getMediaInstance(MessageReceivedEvent event) {
         GuildInstance guildInstance;
 
         //create guildInstance if not exist
         if ((guildInstance = findGuild(event.getGuild())) == null) {
-            guildInstances.add(guildInstance = new GuildInstance(event));
+            guildInstances.add(guildInstance = new GuildInstance(event, this.jda));
         } else {
-            guildInstance.update(event);
+            guildInstance.update(event, this.jda);
         }
 
         //create mediaInstance if not exist in guildInstance
@@ -99,7 +106,6 @@ public class BotInstance {
 
     /**
      * Find the MediaPlayer of specific server
-     *
      * @param guild Server
      * @return Pair of the server and it's MediaPlayer
      */
@@ -107,16 +113,16 @@ public class BotInstance {
         return guildInstances.stream().filter(p -> p.getGuild().equals(guild)).findAny().orElse(null);
     }
 
-    public boolean isLastSendByBot(MessageReceivedEvent event) {
+    public boolean isLastSentByBot(MessageReceivedEvent event) {
         GuildInstance guildInstance = findGuild(event.getGuild());
         if (guildInstance == null || !guildInstance.getLastTextChannel().equals(event.getTextChannel())) return false;
         return guildInstance.isLastSendByBot();
     }
 
-    public String getLastBotsMessageId(MessageReceivedEvent event) {
+    public String getBotsLastMessageId(MessageReceivedEvent event) {
         GuildInstance guildInstance = findGuild(event.getGuild());
         if (guildInstance == null) return null;
-        return guildInstance.getLastBotsMessageId();
+        return guildInstance.getBotsLastMessageId();
     }
 
     public TextChannel getLastTextChannel(MessageReceivedEvent event) {
@@ -133,9 +139,14 @@ class GuildInstance {
     private String lastBotsMessageId = null;
     private boolean isLastSendByBot = false;
 
-    GuildInstance(MessageReceivedEvent event) {
+    /**
+     * Create instance of Guild (Server in Discord)
+     * @param event
+     * @param jda
+     */
+    GuildInstance(MessageReceivedEvent event, JDA jda) {
         this.guild = event.getGuild();
-        update(event);
+        update(event, jda);
     }
 
     Guild getGuild() {
@@ -146,8 +157,15 @@ class GuildInstance {
         return mediaInstance;
     }
 
-    void update(MessageReceivedEvent event) {
-        if (event.getAuthor().isBot() && event.getMessage().getContentRaw().startsWith(">>> ")) {
+    /**
+     * Save Bot's Last Message Id + Last Text Channel user issue command
+     * @param event
+     * @param jda
+     */
+    void update(MessageReceivedEvent event, JDA jda) {
+        if (event.getAuthor().isBot() &&
+                event.getMessage().getContentRaw().startsWith(">>> ") &&
+                event.getAuthor().getJDA().getSelfUser().getIdLong() == jda.getSelfUser().getIdLong()) {
             this.lastBotsMessageId = event.getMessageId();
             this.lastTextChannel = event.getTextChannel();
             isLastSendByBot = true;
@@ -162,7 +180,7 @@ class GuildInstance {
         return isLastSendByBot;
     }
 
-    String getLastBotsMessageId() {
+    String getBotsLastMessageId() {
         return lastBotsMessageId;
     }
 

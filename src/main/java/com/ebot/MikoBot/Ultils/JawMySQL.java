@@ -12,6 +12,11 @@ import java.util.ArrayList;
  * Add functionality to reboot the bot on heroku without clearing user data
  */
 public class JawMySQL {
+    /**
+     * Add acronym to database
+     * @param acronym Acronym word
+     * @param formal Formal word of acronym word
+     */
     public static void addAcronym(String acronym, String formal) {
         try(Connection con = getConnection();
             Statement st = con.createStatement()) {            
@@ -26,6 +31,10 @@ public class JawMySQL {
         }
     }
 
+    /**
+     * Delete acronym word from database
+     * @param acronym Acronym word
+     */
     public static void removeAcronym(String acronym) {
         try (Connection con = getConnection();
              Statement st = con.createStatement()) {
@@ -35,6 +44,10 @@ public class JawMySQL {
         }
     }
 
+    /**
+     * Load all acronym words from database
+     * @return Array list of WordPair (acronym and it's formal word)
+     */
     public static ArrayList<WordPair> loadAcronym() {
         ArrayList<WordPair> wordPairs = new ArrayList<>();
         try (Connection con = getConnection();
@@ -49,6 +62,11 @@ public class JawMySQL {
         return wordPairs;
     }
 
+    /**
+     * Modify user voice reference on the database (or add if not exists)
+     * @param userId User Id
+     * @param voiceRef Voice reference
+     */
     public static void modifyUserReference(String userId, short voiceRef) {
         try (Connection con = getConnection();
             Statement st = con.createStatement()) {
@@ -63,6 +81,10 @@ public class JawMySQL {
         }
     }
 
+    /**
+     * Load all user voice reference from database
+     * @return Array list of user reference
+     */
     public static ArrayList<UserReference> loadUserReference() {
         ArrayList<UserReference> userReferences = new ArrayList<>();
         try (Connection con = getConnection();
@@ -83,6 +105,11 @@ public class JawMySQL {
         return userReferences;
     }
 
+    /**
+     * Load table
+     * @param tableName Table's name
+     * @return Array list of data in table
+     */
     public static ArrayList<String> loadTable(String tableName) {
         ArrayList<String> strings = new ArrayList<>();
         try (Connection con = getConnection();
@@ -97,6 +124,11 @@ public class JawMySQL {
         return strings;
     }
 
+    /**
+     * Add User Id to database
+     * @param tableName Table's Name
+     * @param userId User Id
+     */
     public static void addToTable(String tableName, String userId) {
         try (Connection con = getConnection();
             Statement st = con.createStatement()) {
@@ -106,6 +138,11 @@ public class JawMySQL {
         }
     }
 
+    /**
+     * Remove User Id from database
+     * @param tableName Table's Name
+     * @param userId User Id
+     */
     public static void removeFromTable(String tableName, String userId) {
         try (Connection con = getConnection();
             Statement st = con.createStatement()) {
@@ -115,6 +152,12 @@ public class JawMySQL {
         }
     }
 
+    /**
+     * Get connection to database
+     * @return Connection to database
+     * @throws URISyntaxException URI Syntax
+     * @throws SQLException SQL Ex
+     */
     private static Connection getConnection() throws URISyntaxException, SQLException {
         try {
             Class.forName("com.mysql.jdbc.Driver");

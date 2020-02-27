@@ -8,6 +8,10 @@ import org.jetbrains.annotations.NotNull;
 public class MediaListener extends MessageListener {
     private PlayingMusic playingMusic;
 
+    /**
+     * Create Media Listener with Bot instance
+     * @param botInstance Bot Instance (created with token)
+     */
     public MediaListener(BotInstance botInstance){
         playingMusic = new PlayingMusic(botInstance);
     }

@@ -254,6 +254,16 @@ public class TextToSpeech {
         }
     }
 
+    /**
+     * Get modified TTS Audio File Path
+     * @param url Google TTS url of the input text
+     * @param memberId Member Id (User Id in Discord)
+     * @param messageId Message's Id
+     * @param voiceRef Voice reference of corresponding user
+     * @return TTS Audio File PAth
+     * @throws IOException IOEx
+     * @throws UnsupportedAudioFileException Unsupported Format
+     */
     private String getAudioPath(String url, String memberId, String messageId, short voiceRef) throws IOException, UnsupportedAudioFileException {
         System.setProperty("http.agent", "Chrome");
         InputStream in = new URL(url).openStream();
@@ -281,6 +291,12 @@ public class TextToSpeech {
         return memberId + messageId + ".wav";
     }
 
+    /**
+     * Audio Format base on user's Voice Reference
+     * @param inFormat Original Format
+     * @param voiceRef User's Voice Reference
+     * @return Modified Audio Format
+     */
     private static AudioFormat getOutFormat(AudioFormat inFormat, int voiceRef) {
         int add;
         switch (voiceRef) {
@@ -357,6 +373,10 @@ class Acronym {
         words.addAll(JawMySQL.loadAcronym());
     }
 
+    /**
+     * List all acronym to specific text channel
+     * @param textChannel Text channel to list
+     */
     static void list(TextChannel textChannel) {
         if (words == null)
             load();
@@ -369,6 +389,11 @@ class Acronym {
 class VoiceReference {
     private static ArrayList<UserReference> voiceRefs = null;
 
+    /**
+     * Change user reference
+     * @param userId User Id
+     * @param voiceRef Voice reference (1 - 4)
+     */
     static void modifyUserRef(String userId, short voiceRef) {
         if (voiceRefs == null) load();
         voiceRefs.removeIf(x -> x.getUserId().equals(userId));
@@ -376,6 +401,9 @@ class VoiceReference {
         JawMySQL.modifyUserReference(userId, voiceRef);
     }
 
+    /**
+     * Load all user voice reference
+     */
     private static void load() {
         if (voiceRefs != null)
             voiceRefs.clear();
@@ -383,6 +411,11 @@ class VoiceReference {
         voiceRefs.addAll(JawMySQL.loadUserReference());
     }
 
+    /**
+     * Get voice reference of specific user
+     * @param userId User Id
+     * @return Voice reference number
+     */
     static short getVoiceRef(String userId) {
         if (voiceRefs == null) load();
         for (UserReference x : voiceRefs) {

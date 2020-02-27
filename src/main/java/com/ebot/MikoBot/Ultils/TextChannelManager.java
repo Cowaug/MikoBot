@@ -4,24 +4,32 @@ import com.ebot.MikoBot.BotInstance;
 import com.vdurmont.emoji.EmojiParser;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-
 public class TextChannelManager {
+    /**
+     * React to message of user
+     * @param event Event which user enter command
+     * @param unicode Unicode from of emoji
+     */
     public static void react(MessageReceivedEvent event, String unicode) {
         if (!event.getAuthor().isBot()) {
             event.getTextChannel().addReactionById(event.getMessageId(), EmojiParser.parseToUnicode(unicode)).queue();
         }
     }
 
+    /**
+     * Edit Bot's message
+     * @param botInstance Bot Instance
+     * @param event Event which Bot's send message
+     * @param message Message content to override
+     */
     public static void updateMessage(BotInstance botInstance, MessageReceivedEvent event, String message) {
         try {
-            if (botInstance.isLastSendByBot(event))
-                event.getTextChannel().editMessageById(botInstance.getLastBotsMessageId(event), message).queue();
+            if (botInstance.isLastSentByBot(event))
+                event.getTextChannel().editMessageById(botInstance.getBotsLastMessageId(event), message).queue();
             else {
                 event.getTextChannel().sendMessage(message).queue();
                 try {
-                    botInstance.getLastTextChannel(event).deleteMessageById(botInstance.getLastBotsMessageId(event)).queue();
+                    botInstance.getLastTextChannel(event).deleteMessageById(botInstance.getBotsLastMessageId(event)).queue();
                 } catch (Exception ex) {
                     ex.printStackTrace();
                 }
@@ -33,6 +41,10 @@ public class TextChannelManager {
 
     }
 
+    /**
+     * Get info about Music Bot
+     * @return Info of Music Bot
+     */
     public static String getInfoMusic(){
         return ">>> " +
                 "*Made by <@402414887264845825> at eBot Team*\n\n" +
@@ -46,6 +58,11 @@ public class TextChannelManager {
                 "``/pause`` | ``/resume`` Pause | resume playback\n"+
                 "``/leave`` | ``/join`` Force bot leaves or joins room";
     }
+
+    /**
+     * Get info about TTS Bot
+     * @return Info of TTS Bot
+     */
     public static String getInfoTTS(){
         return ">>> \n" +
                 "*Made by <@402414887264845825> at eBot Team*\n\n" +
@@ -53,6 +70,7 @@ public class TextChannelManager {
                 "``., <text>`` Speak the text then delete the message\n"+
                 "``.lockme`` | ``.unlockme`` Auto speak the text you chat\n"+
                 "``.skip`` Skip current speech\n"+
-                "``/leave`` Force bot leaves room";
+                "``.list`` View list of acronyms\n"+
+                "``.leave`` Force bot leaves room";
     }
 }

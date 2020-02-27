@@ -8,6 +8,10 @@ import org.jetbrains.annotations.NotNull;
 public class TTSListener extends MessageListener{
     private TextToSpeech textToSpeech;
 
+    /**
+     * Create TTS Listener with Bot instance
+     * @param botInstance Bot Instance (created with token)
+     */
     public TTSListener(BotInstance botInstance){
         textToSpeech = new TextToSpeech(botInstance);
     }

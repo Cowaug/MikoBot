@@ -51,6 +51,10 @@ public class TrackController extends AudioEventAdapter {
         sendMessage(oldPage);
     }
 
+    /**
+     * Add playlist to queue
+     * @param audioPlaylist Playlist
+     */
     void queueList(AudioPlaylist audioPlaylist) {
         for (AudioTrack track : audioPlaylist.getTracks()) {
             queue.add(track);
@@ -197,6 +201,10 @@ public class TrackController extends AudioEventAdapter {
         }
     }
 
+    /**
+     * Get queue in many pages form
+     * @return Array list of  queue in pages form
+     */
     private ArrayList<String> getPlayingList() {
         int i = 0;
         final String start = ">>> ```fix\n"
@@ -249,6 +257,11 @@ public class TrackController extends AudioEventAdapter {
         return strings;
     }
 
+    /**
+     * Convert long number to "HH:MM:SS" format
+     * @param l long number
+     * @return "HH:MM:SS" format
+     */
     private String toMin(long l) {
         long hour = (l / 1000) / 60 / 60;
         String min = "0" + (l / 1000) / 60 % 60;
@@ -259,6 +272,10 @@ public class TrackController extends AudioEventAdapter {
         else return ret;
     }
 
+    /**
+     * Display queue in specific page
+     * @param page Page to display
+     */
     private void sendMessage(int page) {
         try {
             TextChannelManager.updateMessage(botInstance,lastEvent,getPlayingList().get(page));

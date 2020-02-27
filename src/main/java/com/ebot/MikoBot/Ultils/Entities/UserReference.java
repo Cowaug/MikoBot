@@ -4,6 +4,11 @@ public class UserReference {
     private String userId;
     private short voiceRef;
 
+    /**
+     * User voice reference
+     * @param userId User Id
+     * @param voiceRef Voice reference (1 - 4)
+     */
     public UserReference(String userId,short voiceRef){
         this.userId=userId;
         switch (voiceRef){

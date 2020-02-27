@@ -18,14 +18,15 @@ public class MessageListener extends ListenerAdapter {
      */
     @Override
     public void onMessageReceived(@NotNull MessageReceivedEvent event) {
-        event.getMessage().getReactions().forEach(x->System.out.print(x.getReactionEmote().getEmoji()));
-//        if (event.isFromType(ChannelType.PRIVATE)) {
-//            System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
-//                    event.getMessage().getContentDisplay());
-//        } else {
-//            System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
-//                    event.getTextChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(),
-//                    event.getMessage().getContentDisplay());
-//        }
+        System.out.print(event.getMessage().getContentDisplay());
+        event.getMessage().getReactions().forEach(x->event.getTextChannel().sendMessage(x.getReactionEmote().getEmoji()).queue());
+        if (event.isFromType(ChannelType.PRIVATE)) {
+            System.out.printf("[PM] %s: %s\n", event.getAuthor().getName(),
+                    event.getMessage().getContentDisplay());
+        } else {
+            System.out.printf("[%s][%s] %s: %s\n", event.getGuild().getName(),
+                    event.getTextChannel().getName(), Objects.requireNonNull(event.getMember()).getEffectiveName(),
+                    event.getMessage().getContentDisplay());
+        }
     }
 }

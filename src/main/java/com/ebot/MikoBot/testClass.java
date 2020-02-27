@@ -17,7 +17,9 @@ import java.util.concurrent.TimeoutException;
 
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
-
+/**
+ * This for testing only - it serves nothing
+ */
 public class testClass {
     public static void main(String[] args) throws IOException, UnsupportedAudioFileException {
     }
