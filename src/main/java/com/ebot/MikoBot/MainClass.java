@@ -9,7 +9,7 @@ public class MainClass {
     private static BotInstance ttsBot;
 
     /**
-     * Program entry point
+     * Program's entry point
      *
      * @param args Token, Functionality of the Bot
      */
