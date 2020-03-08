@@ -3,7 +3,7 @@ package com.ebot.MikoBot;
 import com.ebot.MikoBot.Ultils.Listener.MediaListener;
 import com.ebot.MikoBot.Ultils.Listener.TTSListener;
 import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
-import net.dv8tion.jda.api.AccountType;
+import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
 import net.dv8tion.jda.api.entities.Activity;
@@ -13,9 +13,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.Compression;
 
 import java.net.JarURLConnection;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Objects;
+import java.util.*;
 
 public class BotInstance {
     public static final String MUSIC = "Music";
@@ -32,7 +30,7 @@ public class BotInstance {
      * @param mode Bot's mode (MUSIC / TTS)
      * @param region Bot's Region (base on token on HEROKU)
      */
-    BotInstance(String token, String mode, String region) {
+    public BotInstance(String token, String mode, String region) {
         System.out.println("CREATING " + mode.toUpperCase() + " BOT...");
         this.token = token;
         this.mode = mode;
@@ -62,14 +60,11 @@ public class BotInstance {
 
     /**
      * Get version of Bot base on Bot's Build Date
-     * @return Bot's Build Date + Region
+     * @return Bot's Start Date + Region
      */
-    private static String getVersion() {
-        long time = 0;
+    private String getVersion() {
+        long time = System.currentTimeMillis();
         try {
-            String rn = MainClass.class.getName().replace('.', '/') + ".class";
-            JarURLConnection j = (JarURLConnection) Objects.requireNonNull(MainClass.class.getClassLoader().getResource(rn)).openConnection();
-            time = j.getJarFile().getEntry("META-INF/MANIFEST.MF").getTime();
         } catch (Exception e) {
             e.printStackTrace();
         }
