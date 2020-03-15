@@ -2,6 +2,12 @@
   <dictionary name="Exos">
     <words>
       <w>heroku</w>
+      <w>lockme</w>
+      <w>loopall</w>
+      <w>loopoff</w>
+      <w>loopone</w>
+      <w>setvol</w>
+      <w>unlockme</w>
     </words>
   </dictionary>
 </component>

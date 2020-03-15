@@ -1,12 +1,12 @@
 package com.ebot.MikoBot.Ultils.MediaPlayer;
 
+import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.*;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
 import com.sedmelluq.discord.lavaplayer.source.bandcamp.BandcampAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.beam.BeamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.http.HttpAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.local.LocalAudioSourceManager;
-import com.sedmelluq.discord.lavaplayer.source.soundcloud.SoundCloudAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.twitch.TwitchStreamAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.vimeo.VimeoAudioSourceManager;
 import com.sedmelluq.discord.lavaplayer.source.youtube.YoutubeAudioSourceManager;
@@ -22,7 +22,6 @@ import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.nio.ByteBuffer;
 
-import static com.ebot.MikoBot.BotInstance.MUSIC;
 import static com.ebot.MikoBot.BotInstance.TTS;
 
 public class MediaInstance {
@@ -40,7 +39,6 @@ public class MediaInstance {
         AudioSourceManagers.registerRemoteSources(playerManager);
         playerManager.getConfiguration().setResamplingQuality(AudioConfiguration.ResamplingQuality.HIGH);
         playerManager.registerSourceManager(new YoutubeAudioSourceManager());
-        playerManager.registerSourceManager(new SoundCloudAudioSourceManager());
         playerManager.registerSourceManager(new BandcampAudioSourceManager());
         playerManager.registerSourceManager(new VimeoAudioSourceManager());
         playerManager.registerSourceManager(new TwitchStreamAudioSourceManager());
@@ -84,12 +82,10 @@ public class MediaInstance {
         playerManager.loadItem(url, new AudioLoadResultHandler() {
             @Override
             public void trackLoaded(AudioTrack track) {
-                if (textChannel != null) {
-                    controller.queue(track);
-                } else {
+                if (textChannel == null) {
                     controller.setVolume(75);
-                    controller.queue(track);
                 }
+                controller.queue(track);
             }
 
             @Override

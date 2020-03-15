@@ -7,8 +7,8 @@
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
-    <orderEntry type="library" exported="" name="Maven: net.dv8tion:JDA:4.0.0_56" level="project" />
-    <orderEntry type="library" exported="" name="Maven: com.sedmelluq:lavaplayer:1.3.25" level="project" />
-    <orderEntry type="library" exported="" name="Maven: com.vdurmont:emoji-java:5.1.1" level="project" />
+    <orderEntry type="library" name="Maven: com.sedmelluq:lavaplayer:1.3.34" level="project" />
+    <orderEntry type="library" name="Maven: net.dv8tion:JDA:4.0.0_56" level="project" />
+    <orderEntry type="library" name="Maven: com.vdurmont:emoji-java:5.1.1" level="project" />
   </component>
 </module>

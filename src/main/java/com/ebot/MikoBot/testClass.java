@@ -1,5 +1,7 @@
 package com.ebot.MikoBot;
 
+
+import com.ebot.MikoBot.Ultils.Entities.Commands;
 import com.ebot.MikoBot.Ultils.MediaPlayer.TtsController;
 import com.sedmelluq.discord.lavaplayer.filter.PcmFilterFactory;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
@@ -25,6 +27,15 @@ import static javax.sound.sampled.AudioSystem.getAudioInputStream;
  */
 public class testClass {
     public static void main(String[] args) throws IOException, UnsupportedAudioFileException {
-
+        String lme = "PLAY";
+        Commands commands = Commands.valueOf(lme);
+        System.out.println(commands.isNeedInVoice());
+        switch (commands){
+            case PLAY:
+                break;
+            case LOCK_ME:
+                System.out.println("lockme");
+                break;
+        }
     }
 }

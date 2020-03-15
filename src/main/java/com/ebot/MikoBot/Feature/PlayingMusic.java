@@ -2,6 +2,7 @@ package com.ebot.MikoBot.Feature;
 
 import com.ebot.MikoBot.BotInstance;
 import com.ebot.MikoBot.MainClass;
+import com.ebot.MikoBot.Ultils.Entities.Commands;
 import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
 import com.ebot.MikoBot.Ultils.TextChannelManager;
 import net.dv8tion.jda.api.entities.TextChannel;
@@ -30,26 +31,26 @@ public class PlayingMusic {
      */
     public void execute(final MessageReceivedEvent event) {
         String[] message = event.getMessage().getContentDisplay().split("\n");
-        String[] needInVoiceCommand = "play remove setVol stop next loopOne loopAll loopOff clear pause resume join queue page".split(" ");
 
         new Thread(() -> {
-            try {
-                TextChannel textChannel = event.getTextChannel();
-                MediaInstance mediaInstance = botInstance.getMediaInstance(event);
-                VoiceChannel voiceChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
 
-                for (String s : message) {
-                    if (!s.startsWith(MEDIA_PREFIX)) continue;
+            TextChannel textChannel = event.getTextChannel();
+            MediaInstance mediaInstance = botInstance.getMediaInstance(event);
+            VoiceChannel voiceChannel = Objects.requireNonNull(Objects.requireNonNull(event.getMember()).getVoiceState()).getChannel();
+
+            for (String s : message) {
+                if (!s.startsWith(MEDIA_PREFIX)) continue;
+
+                try {
                     mediaInstance.getController().setLastEvent(botInstance, event);
-
                     String content = s.substring(1);
-                    String cmd = content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length());
-                    content = content.replaceFirst(cmd, "").replace(" ", "");
+                    Commands.MUSIC cmd = Commands.MUSIC.valueOf(content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length()).toUpperCase());
+                    content = content.toLowerCase().replaceFirst(cmd.toString().toLowerCase(), "").replace(" ", "");
 
-                    if (voiceChannel != null || !Arrays.asList(needInVoiceCommand).contains(cmd)) {
-                        if (Arrays.asList(needInVoiceCommand).contains(cmd)) mediaInstance.reconnect(voiceChannel);
+                    if (voiceChannel != null || !cmd.needInVoice) {
+                        if (cmd.needInVoice) mediaInstance.reconnect(voiceChannel);
                         switch (cmd) {
-                            case "play":
+                            case PLAY:
                                 if (!content.equals("")) {
                                     try {
                                         int customIdx = Integer.parseInt(content);
@@ -68,7 +69,8 @@ public class PlayingMusic {
                                     react(event, ":x:");
                                     return;
                                 }
-                            case "remove":
+
+                            case REMOVE:
                                 int i;
                                 if (!content.equals("")) {
                                     if ((i = Integer.parseInt(content)) > 0)
@@ -79,7 +81,7 @@ public class PlayingMusic {
                                     return;
                                 }
 
-                            case "setVol":
+                            case SETVOL:
                                 int vol;
                                 if (!content.equals("")) {
                                     if ((vol = Integer.parseInt(content)) > 0) {
@@ -90,34 +92,34 @@ public class PlayingMusic {
                                     react(event, ":x:");
                                     return;
                                 }
-                            case "stop":
+                            case STOP:
                                 mediaInstance.getController().stop();
                                 break;
-                            case "next":
+                            case NEXT:
                                 mediaInstance.getController().nextTrack(true);
                                 break;
-                            case "loopOne":
+                            case LOOPONE:
                                 mediaInstance.getController().setLoopOne();
                                 break;
-                            case "loopAll":
+                            case LOOPALL:
                                 mediaInstance.getController().setLoopAll();
                                 break;
-                            case "loopOff":
+                            case LOOPOFF:
                                 mediaInstance.getController().setLoopOff();
                                 break;
-                            case "clear":
+                            case CLEAR:
                                 mediaInstance.getController().clear();
                                 break;
-                            case "pause":
+                            case PAUSE:
                                 mediaInstance.getController().pause();
                                 break;
-                            case "resume":
+                            case RESUME:
                                 mediaInstance.getController().resume();
                                 break;
-                            case "leave":
+                            case LEAVE:
                                 mediaInstance.disconnect();
                                 break;
-                            case "join":
+                            case JOIN:
                                 try {
                                     mediaInstance.reconnect(voiceChannel);
                                     mediaInstance.getController().pause();
@@ -128,11 +130,11 @@ public class PlayingMusic {
                                     return;
                                 }
                                 break;
-                            case "info":
+                            case INFO:
                                 TextChannelManager.updateMessage(botInstance, event, TextChannelManager.getInfoMusic());
                                 break;
-                            case "page":
-                            case "queue":
+                            case PAGE:
+                            case QUEUE:
                                 int page;
                                 if (content.equals("")) {
                                     mediaInstance.getController().getQueue(-1);
@@ -144,9 +146,6 @@ public class PlayingMusic {
                                     react(event, ":x:");
                                     return;
                                 }
-                            default:
-                                react(event, ":question:");
-                                return;
                         }
                         react(event, ":ok_hand:");
                     } else {
@@ -154,10 +153,16 @@ public class PlayingMusic {
                         react(event, ":exclamation:");
                     }
                 }
-            } catch (Exception ex) {
-                ex.printStackTrace();
-                react(event, ":boom:");
+                catch (IllegalArgumentException illegalArgs){
+                    System.out.println(illegalArgs.getMessage());
+                    react(event, ":question:");
+                }
+                catch (Exception ex) {
+                    ex.printStackTrace();
+                    react(event, ":boom:");
+                }
             }
+
         }).start();
     }
 }
