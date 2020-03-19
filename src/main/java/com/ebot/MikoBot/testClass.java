@@ -27,15 +27,5 @@ import static javax.sound.sampled.AudioSystem.getAudioInputStream;
  */
 public class testClass {
     public static void main(String[] args) throws IOException, UnsupportedAudioFileException {
-        String lme = "PLAY";
-        Commands commands = Commands.valueOf(lme);
-        System.out.println(commands.isNeedInVoice());
-        switch (commands){
-            case PLAY:
-                break;
-            case LOCK_ME:
-                System.out.println("lockme");
-                break;
-        }
     }
 }
