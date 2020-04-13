@@ -45,7 +45,7 @@ public class PlayingMusic {
                     mediaInstance.getController().setLastEvent(botInstance, event);
                     String content = s.substring(1);
                     Commands.MUSIC cmd = Commands.MUSIC.valueOf(content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length()).toUpperCase());
-                    content = content.toLowerCase().replaceFirst(cmd.toString().toLowerCase(), "").replace(" ", "");
+                    content = content.substring(content.contains(" ") ? content.indexOf(" ") : 0).trim();
 
                     if (voiceChannel != null || !cmd.needInVoice) {
                         if (cmd.needInVoice) mediaInstance.reconnect(voiceChannel);

@@ -112,7 +112,7 @@ public class TextToSpeech {
                         JawMySQL.removeFromTable("autoTTS", memberId);
                         break;
                     case "add":
-                        content = content.replaceFirst(" ", "");
+                        content = content.trim();
                         if (!content.equals("")) {
                             String[] str = {null, null};
 
@@ -133,7 +133,7 @@ public class TextToSpeech {
                         }
                     case "remove": {
                         if (!content.equals("")) {
-                            Acronym.removeAcronym(content.replace(" ", ""));
+                            Acronym.removeAcronym(content.trim());
                             break;
                         } else {
                             react(event, ":x:");
@@ -151,7 +151,7 @@ public class TextToSpeech {
                     case "setVoice":
                         short voiceRef = 1;
                         try {
-                            voiceRef = Short.parseShort(content.replace(" ", ""));
+                            voiceRef = Short.parseShort(content.trim());
                         } catch (Exception ex) {
                             System.out.print(ex.getMessage());
                         }
@@ -167,7 +167,7 @@ public class TextToSpeech {
                         String demoText = "voice thứ ";
                         int i;
                         try {
-                            i = Integer.parseInt(content.replace(" ", ""));
+                            i = Integer.parseInt(content.trim());
                             int tmp = i > 4 ? 0 : i;
                             tmp = Math.max(1, tmp);
                             playTTS(voiceChannel, mediaInstance, GoogleTranslate("xxxxxxxxxxxxxxxxx" + tmp, messageId, demoText + i));

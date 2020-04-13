@@ -13,21 +13,27 @@ import java.util.ArrayList;
  */
 public class JawMySQL {
     private static Connection connection = null;
+    static String url = null;
 
-    static {
+    public static void setDBUrl(String url) {
+        JawMySQL.url = url;
+    }
+
+    public static void init() {
+        if (connection != null) return;
         System.out.println("Connecting to database (MikoBot)");
         try {
-            URI jdbUri = new URI(System.getenv("JAWSDB_URL"));
+            URI jdbUri = url == null ? new URI(System.getenv("JAWSDB_URL")) : new URI(url);
             while (connection == null) {
-                try {
-                    Class.forName("com.mysql.cj.jdbc.Driver");
-                    String jdbUrl = "jdbc:mysql://" + jdbUri.getHost() + ":" + jdbUri.getPort() + jdbUri.getPath();
-                    connection = DriverManager.getConnection(jdbUrl, jdbUri.getUserInfo().split(":")[0], jdbUri.getUserInfo().split(":")[1]);
-                    System.out.println("Connection to database (MikoBot) initialed!");
-                    System.out.println(connection);
-                } catch (SQLException | ClassNotFoundException e) {
-                    System.out.println(e.getMessage());
-                }
+            try {
+                Class.forName("com.mysql.cj.jdbc.Driver");
+                String jdbUrl = "jdbc:mysql://" + jdbUri.getHost() + ":" + jdbUri.getPort() + jdbUri.getPath();
+                connection = DriverManager.getConnection(jdbUrl, jdbUri.getUserInfo().split(":")[0], jdbUri.getUserInfo().split(":")[1]);
+                System.out.println("Connection to database (MikoBot) initialed!");
+            } catch (SQLException | ClassNotFoundException e) {
+//                e.printStackTrace();
+                System.out.println(e.getMessage());
+            }
             }
         } catch (URISyntaxException e) {
             System.out.println(e.getMessage());
@@ -43,11 +49,11 @@ public class JawMySQL {
     public static void addAcronym(String acronym, String formal) {
         try (
                 Statement st = connection.createStatement()) {
-            st.execute("insert into acronym(acronymWord, formalWord) values ('" + acronym + "','" + formal + "')");
+            st.executeUpdate("insert into acronym(acronymWord, formalWord) values ('" + acronym + "','" + formal + "')");
         } catch (Exception ignored) {
             try (
                     Statement st = connection.createStatement()) {
-                st.execute("update acronym set formalWord = '" + formal + "' where acronymWord = '" + acronym + "'");
+                st.executeUpdate("update acronym set formalWord = '" + formal + "' where acronymWord = '" + acronym + "'");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -62,7 +68,7 @@ public class JawMySQL {
     public static void removeAcronym(String acronym) {
         try (
                 Statement st = connection.createStatement()) {
-            st.execute("delete from acronym where acronymWord = '" + acronym + "'");
+            st.executeUpdate("delete from acronym where acronymWord = '" + acronym + "'");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -96,11 +102,11 @@ public class JawMySQL {
     public static void modifyUserReference(String userId, short voiceRef) {
         try (
                 Statement st = connection.createStatement()) {
-            st.execute("insert into voiceRef(userId, voiceRef) values ('" + userId + "','" + voiceRef + "')");
+            st.executeUpdate("insert into voiceRef(userId, voiceRef) values ('" + userId + "','" + voiceRef + "')");
         } catch (Exception ignored) {
             try (
                     Statement st = connection.createStatement()) {
-                st.execute("update voiceRef set voiceRef = '" + voiceRef + "' where userId = '" + userId + "'");
+                st.executeUpdate("update voiceRef set voiceRef = '" + voiceRef + "' where userId = '" + userId + "'");
             } catch (Exception ex) {
                 ex.printStackTrace();
             }
@@ -159,9 +165,8 @@ public class JawMySQL {
      * @param userId    User Id
      */
     public static void addToTable(String tableName, String userId) {
-        try (
-                Statement st = connection.createStatement()) {
-            st.execute("insert into " + tableName + "(userId) values (" + userId + ")");
+        try (Statement st = connection.createStatement()) {
+            st.executeUpdate("insert into " + tableName + "(userId) values (" + userId + ")");
         } catch (Exception ex) {
             ex.printStackTrace();
         }
@@ -176,7 +181,7 @@ public class JawMySQL {
     public static void removeFromTable(String tableName, String userId) {
         try (
                 Statement st = connection.createStatement()) {
-            st.execute("delete from " + tableName + " where userId = " + userId);
+            st.executeUpdate("delete from " + tableName + " where userId = " + userId);
         } catch (Exception ex) {
             ex.printStackTrace();
         }

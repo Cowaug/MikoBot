@@ -1,5 +1,7 @@
 package com.ebot.MikoBot;
 
+import com.ebot.MikoBot.Ultils.JawMySQL;
+
 /**
  * DO NOT EXTENDS "Application" as OpenJDK not support it
  * Oracle run normally
@@ -14,6 +16,7 @@ public class MainClass {
      * @param args Token, Functionality of the Bot
      */
     public static void main(String[] args) {
+        JawMySQL.init();
         if (ttsBot == null)
             new Thread(() -> {
                 try {
