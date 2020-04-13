@@ -75,8 +75,8 @@ public class TextToSpeech {
 
             boolean autoIgnore;
 
-            String TTS_PREFIX = ".";
-            String[] IGNORE_KEYWORD = {MEDIA_PREFIX, "`", "http://", "https://"};
+            final String TTS_PREFIX = ".";
+            final String[] IGNORE_KEYWORD = {MEDIA_PREFIX, "`", "http://", "https://"};
 
             if (content.startsWith(TTS_PREFIX)) {
                 autoIgnore = false;
