@@ -3,8 +3,8 @@ package com.ebot.mikobot.features.tts.model;
 import java.io.Serializable;
 
 public class Acronym implements Serializable {
-    private String formal;
-    private String slang;
+    private final String formal;
+    private final String slang;
 
     /**
      * Create new word

@@ -5,7 +5,7 @@ import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 import java.util.ArrayList;
 
 public class Queue {
-    private ArrayList<AudioTrack> audioTracks = new ArrayList<>();
+    private final ArrayList<AudioTrack> audioTracks = new ArrayList<>();
     private int currentIndex = -1;
 
     /**

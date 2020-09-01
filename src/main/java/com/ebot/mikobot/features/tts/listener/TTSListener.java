@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 
 public class TTSListener extends MessageListener {
-    private TextToSpeech textToSpeech;
+    private final TextToSpeech textToSpeech;
 
     /**
      * Create TTS Listener with Bot instance

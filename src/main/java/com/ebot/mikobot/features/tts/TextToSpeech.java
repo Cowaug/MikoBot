@@ -36,7 +36,7 @@ public class TextToSpeech {
 
     private ArrayList<String> autoTTS;
     private ArrayList<String> autoTTSDelete;
-    private BotInstance botInstance;
+    private final BotInstance botInstance;
 
     /**
      * Load the list of user whom prefer

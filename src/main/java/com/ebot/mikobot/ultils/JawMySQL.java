@@ -11,10 +11,13 @@ import java.util.ArrayList;
 /**
  * Add functionality to reboot the bot on heroku without clearing user data
  */
+@SuppressWarnings({"SqlDialectInspection", "SqlNoDataSourceInspection"})
 public class JawMySQL {
     private static Connection connection = null;
     static String url = null;
 
+
+    @SuppressWarnings("unused")
     public static void setDBUrl(String url) {
         JawMySQL.url = url;
     }

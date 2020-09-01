@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 class GuildInstance {
-    private Guild guild;
+    private final Guild guild;
     private MediaInstance mediaInstance = null;
     private TextChannel lastTextChannel;
     private String lastBotsMessageId = null;
@@ -15,8 +15,8 @@ class GuildInstance {
 
     /**
      * Create instance of Guild (Server in Discord)
-     * @param event
-     * @param jda
+     * @param event user's event
+     * @param jda jda of bot instance
      */
     GuildInstance(MessageReceivedEvent event, JDA jda) {
         this.guild = event.getGuild();
@@ -33,8 +33,8 @@ class GuildInstance {
 
     /**
      * Save Bot's Last Message Id + Last Text Channel user issue command
-     * @param event
-     * @param jda
+     * @param event user's event
+     * @param jda jda of bot instance
      */
     void update(MessageReceivedEvent event, JDA jda) {
         if (event.getAuthor().isBot() &&

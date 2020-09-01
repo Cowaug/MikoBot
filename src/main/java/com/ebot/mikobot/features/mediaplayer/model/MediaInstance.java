@@ -28,9 +28,9 @@ import java.nio.ByteBuffer;
 import static com.ebot.mikobot.bots.models.BotType.TTS;
 
 public class MediaInstance {
-    private AudioPlayerManager playerManager;
-    private AudioManager audioManager;
-    private TrackController controller;
+    private final AudioPlayerManager playerManager;
+    private final AudioManager audioManager;
+    private final TrackController controller;
 
     /**
      * Create specific media player for a server

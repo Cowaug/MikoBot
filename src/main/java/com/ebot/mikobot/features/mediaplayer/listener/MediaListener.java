@@ -7,7 +7,7 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 
 public class MediaListener extends MessageListener {
-    private PlayingMusic playingMusic;
+    private final PlayingMusic playingMusic;
 
     /**
      * Create Media Listener with Bot instance
