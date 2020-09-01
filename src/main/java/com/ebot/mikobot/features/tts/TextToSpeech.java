@@ -1,12 +1,11 @@
-package com.ebot.MikoBot.Feature;
+package com.ebot.mikobot.features.tts;
 
-import com.ebot.MikoBot.BotInstance;
-import com.ebot.MikoBot.MainClass;
-import com.ebot.MikoBot.Ultils.Entities.UserReference;
-import com.ebot.MikoBot.Ultils.Entities.WordPair;
-import com.ebot.MikoBot.Ultils.JawMySQL;
-import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
-import com.ebot.MikoBot.Ultils.TextChannelManager;
+import com.ebot.mikobot.bots.models.BotInstance;
+import com.ebot.mikobot.features.tts.repos.AcronymList;
+import com.ebot.mikobot.features.tts.repos.VoiceReferenceList;
+import com.ebot.mikobot.ultils.JawMySQL;
+import com.ebot.mikobot.features.mediaplayer.model.MediaInstance;
+import com.ebot.mikobot.ultils.TextChannelManager;
 import net.dv8tion.jda.api.entities.Member;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
@@ -25,8 +24,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Objects;
 
-import static com.ebot.MikoBot.Feature.PlayingMusic.MEDIA_PREFIX;
-import static com.ebot.MikoBot.Ultils.TextChannelManager.react;
+import static com.ebot.mikobot.features.mediaplayer.PlayingMusic.MEDIA_PREFIX;
+import static com.ebot.mikobot.ultils.TextChannelManager.sentReact;
 import static javax.sound.sampled.AudioFormat.Encoding.PCM_SIGNED;
 import static javax.sound.sampled.AudioSystem.getAudioInputStream;
 
@@ -120,23 +119,23 @@ public class TextToSpeech {
                             str[1] = content.replaceFirst(str[0], "");
 
                             if (str[0].equals("") || str[1].equals("")) {
-                                react(event, ":x:");
+                                sentReact(event, ":x:");
                                 return;
                             }
 
-                            Acronym.addAcronym(str[0], str[1]);
+                            AcronymList.addAcronym(str[0], str[1]);
                             break;
 
                         } else {
-                            react(event, ":x:");
+                            sentReact(event, ":x:");
                             return;
                         }
                     case "remove": {
                         if (!content.equals("")) {
-                            Acronym.removeAcronym(content.trim());
+                            AcronymList.removeAcronym(content.trim());
                             break;
                         } else {
-                            react(event, ":x:");
+                            sentReact(event, ":x:");
                             return;
                         }
                     }
@@ -155,10 +154,10 @@ public class TextToSpeech {
                         } catch (Exception ex) {
                             System.out.print(ex.getMessage());
                         }
-                        VoiceReference.modifyUserRef(memberId, voiceRef);
+                        VoiceReferenceList.modifyUserRef(memberId, voiceRef);
                         break;
                     case "list":
-                        Acronym.list(textChannel);
+                        AcronymList.list(textChannel);
                         break;
                     case "info":
                         TextChannelManager.updateMessage(botInstance, event, TextChannelManager.getInfoTTS());
@@ -185,19 +184,19 @@ public class TextToSpeech {
                         mediaInstance.disconnect();
                         break;
                     default:
-                        react(event, ":question:");
+                        sentReact(event, ":question:");
                         return;
                 }
-                react(event, ":ok_hand:");
+                sentReact(event, ":ok_hand:");
             } else {
                 if (!autoIgnore) {
-                    react(event, ":headphones:");
-                    react(event, ":exclamation:");
+                    sentReact(event, ":headphones:");
+                    sentReact(event, ":exclamation:");
                 }
             }
         } catch (Exception e) {
             e.printStackTrace();
-            react(event, ":boom:");
+            sentReact(event, ":boom:");
         }
     }
 
@@ -208,7 +207,7 @@ public class TextToSpeech {
      * @param text Text user wants to speak
      */
     private String GoogleTranslate(String memberId, String messageId, String text) {
-        text = Acronym.replaceAcronym(text);
+        text = AcronymList.replaceAcronym(text);
         String language = VN;
         if (text.startsWith(EN + " ")) {
             text = text.replaceFirst(EN + " ", "");
@@ -223,8 +222,7 @@ public class TextToSpeech {
 
         String url = "https://translate.google.com/translate_tts?ie=UTF-8&client=tw-ob&tl=" + language + "&q=";
         try {
-            return getAudioPath(url + URLEncoder.encode(text.replace("@", "@ "), "UTF-8"), memberId, messageId, VoiceReference.getVoiceRef(memberId));
-
+            return getAudioPath(url + URLEncoder.encode(text.replace("@", "@ "), "UTF-8"), memberId, messageId, VoiceReferenceList.getVoiceRef(memberId));
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -315,116 +313,6 @@ public class TextToSpeech {
         }
         return new AudioFormat(PCM_SIGNED, inFormat.getSampleRate() + add, 16, inFormat.getChannels(), inFormat.getFrameSize(), inFormat.getFrameRate(),
                 inFormat.isBigEndian());
-    }
-}
-
-class Acronym {
-    private static ArrayList<WordPair> words = null;
-
-    /**
-     * Replace pre-defined slang word in the string
-     * with the formal word
-     *
-     * @param sentence Sentence contains slang
-     * @return Sentence without slang
-     */
-    static String replaceAcronym(String sentence) {
-        if (words == null)
-            load();
-        sentence = " " + sentence + " ";
-        String[] specialChar = {" ", ",", ".", "?"};
-        for (WordPair w : words)
-            for (String s : specialChar)
-                sentence = sentence.replace(s + w.getSlang() + s, s + w.getFormal() + s);
-        return sentence.substring(1, sentence.length() - 1);
-    }
-
-    /**
-     * Define a new slang
-     *
-     * @param acronym Slang need to be defined
-     * @param formal  Formal word corresponding to Slang
-     */
-    static void addAcronym(String acronym, String formal) {
-        if (words == null) load();
-        words.removeIf(x -> x.getSlang().equals(acronym));
-        words.add(new WordPair(acronym, formal));
-        JawMySQL.addAcronym(acronym, formal);
-    }
-
-    /**
-     * Remove a slang
-     *
-     * @param acronym Slang need to be removed
-     */
-    static void removeAcronym(String acronym) {
-        if (words == null) load();
-        words.removeIf(x -> x.getSlang().equals(acronym));
-        JawMySQL.removeAcronym(acronym);
-    }
-
-    /**
-     * Load defined slang for use
-     */
-    private static void load() {
-        if (words != null)
-            words.clear();
-        else words = new ArrayList<>();
-        words.addAll(JawMySQL.loadAcronym());
-    }
-
-    /**
-     * List all acronym to specific text channel
-     * @param textChannel Text channel to list
-     */
-    static void list(TextChannel textChannel) {
-        if (words == null)
-            load();
-        StringBuilder output = new StringBuilder(">>> ");
-        words.stream().sorted().forEach(wordPair -> output.append(wordPair.getSlang()).append("\t").append(wordPair.getFormal()).append("\n"));
-        textChannel.sendMessage(output).queue();
-    }
-}
-
-class VoiceReference {
-    private static ArrayList<UserReference> voiceRefs = null;
-
-    /**
-     * Change user reference
-     * @param userId User Id
-     * @param voiceRef Voice reference (1 - 4)
-     */
-    static void modifyUserRef(String userId, short voiceRef) {
-        if (voiceRefs == null) load();
-        voiceRefs.removeIf(x -> x.getUserId().equals(userId));
-        voiceRefs.add(new UserReference(userId, voiceRef));
-        JawMySQL.modifyUserReference(userId, voiceRef);
-    }
-
-    /**
-     * Load all user voice reference
-     */
-    private static void load() {
-        if (voiceRefs != null)
-            voiceRefs.clear();
-        else voiceRefs = new ArrayList<>();
-        voiceRefs.addAll(JawMySQL.loadUserReference());
-    }
-
-    /**
-     * Get voice reference of specific user
-     * @param userId User Id
-     * @return Voice reference number
-     */
-    static short getVoiceRef(String userId) {
-        if (voiceRefs == null) load();
-        for (UserReference x : voiceRefs) {
-            if (x.getUserId().equals(userId)) {
-                return x.getVoiceRef();
-            }
-        }
-        modifyUserRef(userId, (short) 1);
-        return 1;
     }
 }
 

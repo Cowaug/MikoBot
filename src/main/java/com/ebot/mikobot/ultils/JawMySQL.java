@@ -1,7 +1,7 @@
-package com.ebot.MikoBot.Ultils;
+package com.ebot.mikobot.ultils;
 
-import com.ebot.MikoBot.Ultils.Entities.UserReference;
-import com.ebot.MikoBot.Ultils.Entities.WordPair;
+import com.ebot.mikobot.features.tts.model.VoiceReference;
+import com.ebot.mikobot.features.tts.model.Acronym;
 
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -79,18 +79,18 @@ public class JawMySQL {
      *
      * @return Array list of WordPair (acronym and it's formal word)
      */
-    public static ArrayList<WordPair> loadAcronym() {
-        ArrayList<WordPair> wordPairs = new ArrayList<>();
+    public static ArrayList<Acronym> loadAcronym() {
+        ArrayList<Acronym> acronyms = new ArrayList<>();
         try (
                 Statement st = connection.createStatement();
                 ResultSet rs = st.executeQuery("select * from acronym")) {
             while (rs.next()) {
-                wordPairs.add(new WordPair(rs.getString(1), rs.getString(2)));
+                acronyms.add(new Acronym(rs.getString(1), rs.getString(2)));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return wordPairs;
+        return acronyms;
     }
 
     /**
@@ -118,8 +118,8 @@ public class JawMySQL {
      *
      * @return Array list of user reference
      */
-    public static ArrayList<UserReference> loadUserReference() {
-        ArrayList<UserReference> userReferences = new ArrayList<>();
+    public static ArrayList<VoiceReference> loadUserReference() {
+        ArrayList<VoiceReference> voiceReferences = new ArrayList<>();
         try (
                 Statement st = connection.createStatement();
                 ResultSet rs = st.executeQuery("select * from voiceRef")) {
@@ -130,12 +130,12 @@ public class JawMySQL {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
-                userReferences.add(new UserReference(rs.getString(1), voiceRef));
+                voiceReferences.add(new VoiceReference(rs.getString(1), voiceRef));
             }
         } catch (Exception ex) {
             ex.printStackTrace();
         }
-        return userReferences;
+        return voiceReferences;
     }
 
     /**

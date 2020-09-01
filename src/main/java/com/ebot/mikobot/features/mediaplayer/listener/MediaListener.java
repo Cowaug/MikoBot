@@ -1,7 +1,8 @@
-package com.ebot.MikoBot.Ultils.Listener;
+package com.ebot.mikobot.features.mediaplayer.listener;
 
-import com.ebot.MikoBot.BotInstance;
-import com.ebot.MikoBot.Feature.PlayingMusic;
+import com.ebot.mikobot.bots.models.BotInstance;
+import com.ebot.mikobot.features.mediaplayer.PlayingMusic;
+import com.ebot.mikobot.ultils.MessageListener;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 

@@ -1,6 +1,6 @@
-package com.ebot.MikoBot.Ultils;
+package com.ebot.mikobot.ultils;
 
-import com.ebot.MikoBot.BotInstance;
+import com.ebot.mikobot.bots.models.BotInstance;
 import com.vdurmont.emoji.EmojiParser;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
@@ -10,7 +10,7 @@ public class TextChannelManager {
      * @param event Event which user enter command
      * @param unicode Unicode from of emoji
      */
-    public static void react(MessageReceivedEvent event, String unicode) {
+    public static void sentReact(MessageReceivedEvent event, String unicode) {
         if (!event.getAuthor().isBot()) {
             event.getTextChannel().addReactionById(event.getMessageId(), EmojiParser.parseToUnicode(unicode)).queue();
         }

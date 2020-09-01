@@ -1,4 +1,4 @@
-package com.ebot.MikoBot.Ultils.Entities;
+package com.ebot.mikobot.features.mediaplayer.repos;
 
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 

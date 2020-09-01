@@ -1,8 +1,8 @@
-package com.ebot.MikoBot.Ultils.Entities;
+package com.ebot.mikobot.features.tts.model;
 
 import java.io.Serializable;
 
-public class WordPair implements Serializable {
+public class Acronym implements Serializable {
     private String formal;
     private String slang;
 
@@ -12,7 +12,7 @@ public class WordPair implements Serializable {
      * @param slang  Slang
      * @param formal Formal of the corresponding slang
      */
-    public WordPair(String slang, String formal) {
+    public Acronym(String slang, String formal) {
         this.slang = slang;
         this.formal = formal;
     }

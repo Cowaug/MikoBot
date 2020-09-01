@@ -1,12 +1,12 @@
-package com.ebot.MikoBot.Ultils.Listener;
+package com.ebot.mikobot.features.tts.listener;
 
-import com.ebot.MikoBot.BotInstance;
-import com.ebot.MikoBot.Feature.TextToSpeech;
-import com.sun.istack.internal.NotNull;
+import com.ebot.mikobot.bots.models.BotInstance;
+import com.ebot.mikobot.features.tts.TextToSpeech;
+import com.ebot.mikobot.ultils.MessageListener;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
 
-public class TTSListener extends MessageListener{
+public class TTSListener extends MessageListener {
     private TextToSpeech textToSpeech;
 
     /**

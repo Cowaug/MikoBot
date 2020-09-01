@@ -1,5 +1,8 @@
-package com.ebot.MikoBot.Ultils.MediaPlayer;
+package com.ebot.mikobot.features.mediaplayer.model;
 
+import com.ebot.mikobot.bots.models.BotType;
+import com.ebot.mikobot.features.mediaplayer.controller.TrackController;
+import com.ebot.mikobot.features.tts.controller.TtsController;
 import com.sedmelluq.discord.lavaplayer.player.DefaultAudioPlayerManager;
 import com.sedmelluq.discord.lavaplayer.player.*;
 import com.sedmelluq.discord.lavaplayer.source.AudioSourceManagers;
@@ -22,7 +25,7 @@ import net.dv8tion.jda.api.managers.AudioManager;
 
 import java.nio.ByteBuffer;
 
-import static com.ebot.MikoBot.BotInstance.TTS;
+import static com.ebot.mikobot.bots.models.BotType.TTS;
 
 public class MediaInstance {
     private AudioPlayerManager playerManager;
@@ -34,7 +37,7 @@ public class MediaInstance {
      *
      * @param guild Server in Discord
      */
-    public MediaInstance(Guild guild, String botMode) {
+    public MediaInstance(Guild guild, BotType botType) {
         playerManager = new DefaultAudioPlayerManager();
         AudioSourceManagers.registerRemoteSources(playerManager);
         playerManager.getConfiguration().setResamplingQuality(AudioConfiguration.ResamplingQuality.HIGH);
@@ -48,7 +51,7 @@ public class MediaInstance {
 
         AudioPlayer player = playerManager.createPlayer();
 
-        if (botMode.equals(TTS)) controller = new TtsController(player);
+        if (botType.equals(TTS)) controller = new TtsController(player);
         else controller = new TrackController(player);
         player.addListener(controller);
 

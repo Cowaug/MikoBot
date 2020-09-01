@@ -1,6 +1,6 @@
-package com.ebot.MikoBot.Ultils.Entities;
+package com.ebot.mikobot.features.tts.model;
 
-public class UserReference {
+public class VoiceReference {
     private String userId;
     private short voiceRef;
 
@@ -9,7 +9,7 @@ public class UserReference {
      * @param userId User Id
      * @param voiceRef Voice reference (1 - 4)
      */
-    public UserReference(String userId,short voiceRef){
+    public VoiceReference(String userId, short voiceRef){
         this.userId=userId;
         switch (voiceRef){
             default:

@@ -26,7 +26,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                            <mainClass>com.ebot.MikoBot.MainClass</mainClass>
+                            <mainClass>com.ebot.mikobot.MainClass</mainClass>
                         </manifestEntries>
                     </archive>
                 </configuration>

@@ -1,24 +1,20 @@
-package com.ebot.MikoBot.Feature;
+package com.ebot.mikobot.features.mediaplayer;
 
-import com.ebot.MikoBot.BotInstance;
-import com.ebot.MikoBot.MainClass;
-import com.ebot.MikoBot.Ultils.Entities.Commands;
-import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
-import com.ebot.MikoBot.Ultils.TextChannelManager;
+import com.ebot.mikobot.bots.models.BotInstance;
+import com.ebot.mikobot.features.mediaplayer.model.MediaInstance;
+import com.ebot.mikobot.features.mediaplayer.model.MusicCommand;
+import com.ebot.mikobot.ultils.TextChannelManager;
 import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.entities.VoiceChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 
-import java.lang.reflect.Array;
-import java.util.Arrays;
 import java.util.Objects;
 
-import static com.ebot.MikoBot.BotInstance.MUSIC;
-import static com.ebot.MikoBot.Ultils.TextChannelManager.react;
+import static com.ebot.mikobot.ultils.TextChannelManager.sentReact;
 
 public class PlayingMusic {
-    static String MEDIA_PREFIX = "/";
-    private BotInstance botInstance;
+    public static String MEDIA_PREFIX = "/";
+    private final BotInstance botInstance;
 
     public PlayingMusic(BotInstance botInstance) {
         this.botInstance = botInstance;
@@ -44,7 +40,7 @@ public class PlayingMusic {
                 try {
                     mediaInstance.getController().setLastEvent(botInstance, event);
                     String content = s.substring(1);
-                    Commands.MUSIC cmd = Commands.MUSIC.valueOf(content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length()).toUpperCase());
+                    MusicCommand cmd = MusicCommand.valueOf(content.substring(0, content.contains(" ") ? content.indexOf(" ") : content.length()).toUpperCase());
                     content = content.substring(content.contains(" ") ? content.indexOf(" ") : 0).trim();
 
                     if (voiceChannel != null || !cmd.needInVoice) {
@@ -66,7 +62,7 @@ public class PlayingMusic {
                                     }
                                     break;
                                 } else {
-                                    react(event, ":x:");
+                                    sentReact(event, ":x:");
                                     return;
                                 }
 
@@ -77,7 +73,7 @@ public class PlayingMusic {
                                         mediaInstance.getController().remove(i - 1);
                                     break;
                                 } else {
-                                    react(event, ":x:");
+                                    sentReact(event, ":x:");
                                     return;
                                 }
 
@@ -89,7 +85,7 @@ public class PlayingMusic {
                                     }
                                     break;
                                 } else {
-                                    react(event, ":x:");
+                                    sentReact(event, ":x:");
                                     return;
                                 }
                             case STOP:
@@ -126,7 +122,7 @@ public class PlayingMusic {
                                     mediaInstance.getController().resume();
                                 } catch (Exception ex) {
                                     ex.printStackTrace();
-                                    react(event, ":boom:");
+                                    sentReact(event, ":boom:");
                                     return;
                                 }
                                 break;
@@ -143,23 +139,23 @@ public class PlayingMusic {
                                     mediaInstance.getController().getQueue(page - 1);
                                     break;
                                 } else {
-                                    react(event, ":x:");
+                                    sentReact(event, ":x:");
                                     return;
                                 }
                         }
-                        react(event, ":ok_hand:");
+                        sentReact(event, ":ok_hand:");
                     } else {
-                        react(event, ":headphones:");
-                        react(event, ":exclamation:");
+                        sentReact(event, ":headphones:");
+                        sentReact(event, ":exclamation:");
                     }
                 }
                 catch (IllegalArgumentException illegalArgs){
                     System.out.println(illegalArgs.getMessage());
-                    react(event, ":question:");
+                    sentReact(event, ":question:");
                 }
                 catch (Exception ex) {
                     ex.printStackTrace();
-                    react(event, ":boom:");
+                    sentReact(event, ":boom:");
                 }
             }
 

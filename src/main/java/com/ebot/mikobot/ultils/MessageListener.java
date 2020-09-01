@@ -1,7 +1,6 @@
-package com.ebot.MikoBot.Ultils.Listener;
+package com.ebot.mikobot.ultils;
 
 import net.dv8tion.jda.api.entities.ChannelType;
-import net.dv8tion.jda.api.entities.MessageReaction;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.hooks.ListenerAdapter;
 
