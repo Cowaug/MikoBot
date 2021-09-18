@@ -35,7 +35,7 @@ public class JawMySQL {
                 System.out.println(e.getMessage());
             }
             }
-        } catch (URISyntaxException e) {
+        } catch (URISyntaxException | NullPointerException e) {
             System.out.println(e.getMessage());
         }
     }

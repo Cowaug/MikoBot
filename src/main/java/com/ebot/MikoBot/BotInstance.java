@@ -38,21 +38,22 @@ public class BotInstance {
 
         // Building bot base on token
         try {
-            jda = new JDABuilder(AccountType.BOT).setToken(token)
+            JDABuilder builder = JDABuilder.createDefault(token)
                     .setBulkDeleteSplittingEnabled(false)
                     .setCompression(Compression.NONE)
-                    .setActivity(Activity.playing(mode + " - v" + getVersion() + "." + region.substring(0, 2).toUpperCase()))
-                    .build().awaitReady();
+                    .setActivity(Activity.playing(mode + " - v" + getVersion() + "." + region.substring(0, 2).toUpperCase()));
 
             // Add listener base on provided mode
             switch (mode) {
                 case MUSIC:
-                    jda.addEventListener(new MediaListener(this));
+                    builder.addEventListeners(new MediaListener(this));
                     break;
                 case TTS:
-                    jda.addEventListener(new TTSListener(this));
+                    builder.addEventListeners(new TTSListener(this));
                     break;
             }
+
+            jda = builder.build().awaitReady();
         } catch (Exception e) {
             e.printStackTrace();
         }
