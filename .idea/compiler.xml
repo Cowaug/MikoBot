@@ -7,8 +7,8 @@
         <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
         <outputRelativeToContentRoot value="true" />
         <module name="MikoBot" />
-        <module name="eBotMaven" />
         <module name="null" />
+        <module name="eBotMaven" />
       </profile>
     </annotationProcessing>
   </component>
