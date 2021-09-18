@@ -1,0 +1,92 @@
+Index: .idea/MikoBot.iml
+===================================================================
+diff --git a/.idea/MikoBot.iml b/.idea/MikoBot.iml
+deleted file mode 100644
+--- a/.idea/MikoBot.iml	(revision a92cb72eb78203194bf3bfa753e67c72e182066e)
++++ /dev/null	(revision a92cb72eb78203194bf3bfa753e67c72e182066e)
+@@ -1,2 +0,0 @@
+-<?xml version="1.0" encoding="UTF-8"?>
+-<module type="JAVA_MODULE" version="4" />
+\ No newline at end of file
+Index: .idea/runConfigurations.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/runConfigurations.xml b/.idea/runConfigurations.xml
+new file mode 100644
+--- /dev/null	(date 1631966354256)
++++ b/.idea/runConfigurations.xml	(date 1631966354256)
+@@ -0,0 +1,10 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="RunConfigurationProducerService">
++    <option name="ignoredProducers">
++      <set>
++        <option value="com.android.tools.idea.compose.preview.runconfiguration.ComposePreviewRunConfigurationProducer" />
++      </set>
++    </option>
++  </component>
++</project>
+\ No newline at end of file
+Index: .idea/libraries/jmx_client.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/libraries/jmx_client.xml b/.idea/libraries/jmx_client.xml
+new file mode 100644
+--- /dev/null	(date 1631966354213)
++++ b/.idea/libraries/jmx_client.xml	(date 1631966354213)
+@@ -0,0 +1,9 @@
++<component name="libraryTable">
++  <library name="jmx-client">
++    <CLASSES>
++      <root url="jar://$PROJECT_DIR$/../../jmx-client.jar!/" />
++    </CLASSES>
++    <JAVADOC />
++    <SOURCES />
++  </library>
++</component>
+\ No newline at end of file
+Index: .idea/jarRepositories.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/jarRepositories.xml b/.idea/jarRepositories.xml
+new file mode 100644
+--- /dev/null	(date 1631966354205)
++++ b/.idea/jarRepositories.xml	(date 1631966354205)
+@@ -0,0 +1,30 @@
++<?xml version="1.0" encoding="UTF-8"?>
++<project version="4">
++  <component name="RemoteRepositoriesConfiguration">
++    <remote-repository>
++      <option name="id" value="central" />
++      <option name="name" value="Central Repository" />
++      <option name="url" value="https://repo.maven.apache.org/maven2" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="dv8tion" />
++      <option name="name" value="m2-dv8tion" />
++      <option name="url" value="https://m2.dv8tion.net/releases" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="jcenter" />
++      <option name="name" value="jcenter-bintray" />
++      <option name="url" value="https://jcenter.bintray.com" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="central" />
++      <option name="name" value="Maven Central repository" />
++      <option name="url" value="https://repo1.maven.org/maven2" />
++    </remote-repository>
++    <remote-repository>
++      <option name="id" value="jboss.community" />
++      <option name="name" value="JBoss Community repository" />
++      <option name="url" value="https://repository.jboss.org/nexus/content/repositories/public/" />
++    </remote-repository>
++  </component>
++</project>
+\ No newline at end of file

@@ -1,0 +1,9 @@
+<component name="libraryTable">
+  <library name="jmx-client">
+    <CLASSES>
+      <root url="jar://$PROJECT_DIR$/../../jmx-client.jar!/" />
+    </CLASSES>
+    <JAVADOC />
+    <SOURCES />
+  </library>
+</component>
