@@ -1,10 +1,10 @@
-package com.ebot.MikoBot.Ultils.Entities;
+package com.ebot.mikobot.features.tts.model;
 
 import java.io.Serializable;
 
-public class WordPair implements Serializable {
-    private String formal;
-    private String slang;
+public class Acronym implements Serializable {
+    private final String formal;
+    private final String slang;
 
     /**
      * Create new word
@@ -12,7 +12,7 @@ public class WordPair implements Serializable {
      * @param slang  Slang
      * @param formal Formal of the corresponding slang
      */
-    public WordPair(String slang, String formal) {
+    public Acronym(String slang, String formal) {
         this.slang = slang;
         this.formal = formal;
     }

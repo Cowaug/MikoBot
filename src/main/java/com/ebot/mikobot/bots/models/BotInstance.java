@@ -1,8 +1,8 @@
-package com.ebot.MikoBot;
+package com.ebot.mikobot.bots.models;
 
-import com.ebot.MikoBot.Ultils.Listener.MediaListener;
-import com.ebot.MikoBot.Ultils.Listener.TTSListener;
-import com.ebot.MikoBot.Ultils.MediaPlayer.MediaInstance;
+import com.ebot.mikobot.features.mediaplayer.listener.MediaListener;
+import com.ebot.mikobot.features.tts.listener.TTSListener;
+import com.ebot.mikobot.features.mediaplayer.model.MediaInstance;
 import net.dv8tion.jda.api.*;
 import net.dv8tion.jda.api.JDA;
 import net.dv8tion.jda.api.JDABuilder;
@@ -12,29 +12,48 @@ import net.dv8tion.jda.api.entities.TextChannel;
 import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import net.dv8tion.jda.api.utils.Compression;
 
-import java.net.JarURLConnection;
 import java.util.*;
 
 public class BotInstance {
-    public static final String MUSIC = "Music";
-    public static final String TTS = "TTS";
     private JDA jda;
-    private String token;
-    private String mode;
-    private String region;
-    private ArrayList<GuildInstance> guildInstances = new ArrayList<>();
+    private final String token;
+    private final BotType mode;
+    private final String region;
+    private final ArrayList<GuildInstance> guildInstances = new ArrayList<>();
 
     /**
      * Create Bot Instance
-     * @param token Bot secret token
-     * @param mode Bot's mode (MUSIC / TTS)
+     *
+     * @param token  Bot secret token
+     * @param mode   Bot's mode (MUSIC / TTS)
      * @param region Bot's Region (base on token on HEROKU)
      */
-    public BotInstance(String token, String mode, String region) {
-        System.out.println("CREATING " + mode.toUpperCase() + " BOT...");
+    public BotInstance(String token, BotType mode, String region) {
         this.token = token;
         this.mode = mode;
         this.region = region;
+        buildBot();
+    }
+
+    /**
+     * Get version of Bot base on Bot's Build Date
+     *
+     * @return Bot's Start Date + Region
+     */
+    private String getVersion() {
+        long time = System.currentTimeMillis();
+        Calendar c = Calendar.getInstance();
+        c.setTimeInMillis(time); //Set time in milliseconds
+        int mYear = c.get(Calendar.YEAR);
+        int mMonth = c.get(Calendar.MONTH) + 1;
+        int mDay = c.get(Calendar.DAY_OF_MONTH);
+        return String.valueOf(mYear).substring(2) + "." +
+                (mMonth < 10 ? "0" : "") + mMonth + "." +
+                (mDay < 10 ? "0" : "") + mDay;
+    }
+
+    public void buildBot() {
+        System.out.println("CREATING " + mode + " BOT...");
 
         // Building bot base on token
         try {
@@ -59,25 +78,13 @@ public class BotInstance {
         }
     }
 
-    /**
-     * Get version of Bot base on Bot's Build Date
-     * @return Bot's Start Date + Region
-     */
-    private String getVersion() {
-        long time = System.currentTimeMillis();
-        try {
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        Calendar c = Calendar.getInstance();
-        //Set time in milliseconds
-        c.setTimeInMillis(time);
-        int mYear = c.get(Calendar.YEAR);
-        int mMonth = c.get(Calendar.MONTH) + 1;
-        int mDay = c.get(Calendar.DAY_OF_MONTH);
-        return String.valueOf(mYear).substring(2) + "." +
-                (mMonth < 10 ? "0" : "") + mMonth + "." +
-                (mDay < 10 ? "0" : "") + mDay;
+    @SuppressWarnings("unused")
+    public void reboot() {
+        System.out.println("SHUTTING DOWN " + mode + " BOT...");
+        jda.shutdownNow();
+        guildInstances.clear();
+        System.out.println("CREATING " + mode + " BOT...");
+        buildBot();
     }
 
 
@@ -94,14 +101,13 @@ public class BotInstance {
         //create mediaInstance if not exist in guildInstance
         if (guildInstance.getMediaInstance() == null) {
             guildInstance.setMediaInstance(new MediaInstance(event.getGuild(), mode));
-            return guildInstance.getMediaInstance();
-        } else {
-            return guildInstance.getMediaInstance();
         }
+        return guildInstance.getMediaInstance();
     }
 
     /**
      * Find the MediaPlayer of specific server
+     *
      * @param guild Server
      * @return Pair of the server and it's MediaPlayer
      */
@@ -125,63 +131,6 @@ public class BotInstance {
         GuildInstance guildInstance = findGuild(event.getGuild());
         if (guildInstance == null) return null;
         return guildInstance.getLastTextChannel();
-    }
-}
-
-class GuildInstance {
-    private Guild guild;
-    private MediaInstance mediaInstance = null;
-    private TextChannel lastTextChannel;
-    private String lastBotsMessageId = null;
-    private boolean isLastSendByBot = false;
-
-    /**
-     * Create instance of Guild (Server in Discord)
-     * @param event
-     * @param jda
-     */
-    GuildInstance(MessageReceivedEvent event, JDA jda) {
-        this.guild = event.getGuild();
-        update(event, jda);
-    }
-
-    Guild getGuild() {
-        return guild;
-    }
-
-    MediaInstance getMediaInstance() {
-        return mediaInstance;
-    }
-
-    /**
-     * Save Bot's Last Message Id + Last Text Channel user issue command
-     * @param event
-     * @param jda
-     */
-    void update(MessageReceivedEvent event, JDA jda) {
-        if (event.getAuthor().isBot() &&
-                event.getMessage().getContentRaw().startsWith(">>> ") &&
-                event.getAuthor().getJDA().getSelfUser().getIdLong() == jda.getSelfUser().getIdLong()) {
-            this.lastBotsMessageId = event.getMessageId();
-            this.lastTextChannel = event.getTextChannel();
-            isLastSendByBot = true;
-        } else isLastSendByBot = false;
-    }
-
-    void setMediaInstance(MediaInstance mediaInstance) {
-        this.mediaInstance = mediaInstance;
-    }
-
-    boolean isLastSendByBot() {
-        return isLastSendByBot;
-    }
-
-    String getBotsLastMessageId() {
-        return lastBotsMessageId;
-    }
-
-    TextChannel getLastTextChannel() {
-        return lastTextChannel;
     }
 }
 

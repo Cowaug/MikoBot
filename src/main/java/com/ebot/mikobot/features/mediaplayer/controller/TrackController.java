@@ -1,8 +1,8 @@
-package com.ebot.MikoBot.Ultils.MediaPlayer;
+package com.ebot.mikobot.features.mediaplayer.controller;
 
-import com.ebot.MikoBot.BotInstance;
-import com.ebot.MikoBot.Ultils.Entities.Queue;
-import com.ebot.MikoBot.Ultils.TextChannelManager;
+import com.ebot.mikobot.bots.models.BotInstance;
+import com.ebot.mikobot.features.mediaplayer.repos.Queue;
+import com.ebot.mikobot.ultils.TextChannelManager;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.player.event.AudioEventAdapter;
 import com.sedmelluq.discord.lavaplayer.track.AudioPlaylist;
@@ -13,8 +13,8 @@ import net.dv8tion.jda.api.events.message.MessageReceivedEvent;
 import java.util.ArrayList;
 
 public class TrackController extends AudioEventAdapter {
-    AudioPlayer player;
-    Queue queue;
+    protected AudioPlayer player;
+    protected Queue queue;
     private boolean loopOne = false;
     private boolean loopAll;
     private MessageReceivedEvent lastEvent = null;
@@ -27,7 +27,7 @@ public class TrackController extends AudioEventAdapter {
      *
      * @param player The audio player this scheduler uses
      */
-    TrackController(AudioPlayer player) {
+    public TrackController(AudioPlayer player) {
         this.player = player;
         this.loopAll = true;
         this.queue = new Queue();
@@ -55,7 +55,7 @@ public class TrackController extends AudioEventAdapter {
      * Add playlist to queue
      * @param audioPlaylist Playlist
      */
-    void queueList(AudioPlaylist audioPlaylist) {
+    public void queueList(AudioPlaylist audioPlaylist) {
         for (AudioTrack track : audioPlaylist.getTracks()) {
             queue.add(track);
         }

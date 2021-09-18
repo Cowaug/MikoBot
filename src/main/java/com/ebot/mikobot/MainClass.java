@@ -1,6 +1,9 @@
-package com.ebot.MikoBot;
+package com.ebot.mikobot;
 
-import com.ebot.MikoBot.Ultils.JawMySQL;
+import com.ebot.mikobot.bots.models.BotInstance;
+import com.ebot.mikobot.ultils.JawMySQL;
+
+import static com.ebot.mikobot.bots.models.BotType.*;
 
 /**
  * DO NOT EXTENDS "Application" as OpenJDK not support it
@@ -20,19 +23,19 @@ public class MainClass {
         if (ttsBot == null)
             new Thread(() -> {
                 try {
-                    ttsBot = new BotInstance(args[0], BotInstance.TTS, "VN");
+                    ttsBot = new BotInstance(args[0], TTS, "VN");
 
                 } catch (Exception ex) {
-                    ttsBot = new BotInstance(System.getenv("TTS_BOT_TOKEN"), BotInstance.TTS, System.getenv("REGION"));
+                    ttsBot = new BotInstance(System.getenv("TTS_BOT_TOKEN"), TTS, System.getenv("REGION"));
                 }
             }).start();
 
         if (musicBot == null)
             new Thread(() -> {
                 try {
-                    musicBot = new BotInstance(args[1], BotInstance.MUSIC, "VN");
+                    musicBot = new BotInstance(args[1], MUSIC, "VN");
                 } catch (Exception ex) {
-                    musicBot = new BotInstance(System.getenv("MUSIC_BOT_TOKEN"), BotInstance.MUSIC, System.getenv("REGION"));
+                    musicBot = new BotInstance(System.getenv("MUSIC_BOT_TOKEN"), MUSIC, System.getenv("REGION"));
                 }
             }).start();
     }

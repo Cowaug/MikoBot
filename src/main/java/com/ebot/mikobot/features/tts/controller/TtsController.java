@@ -1,15 +1,19 @@
-package com.ebot.MikoBot.Ultils.MediaPlayer;
+package com.ebot.mikobot.features.tts.controller;
 
+import com.ebot.mikobot.features.mediaplayer.controller.TrackController;
 import com.sedmelluq.discord.lavaplayer.player.AudioPlayer;
 import com.sedmelluq.discord.lavaplayer.track.AudioTrack;
 
+/**
+ *  This controller inherit the controller from media player feature
+ */
 public class TtsController extends TrackController {
     /**
      * Create the track scheduler for a player
      *
      * @param player The audio player this scheduler uses
      */
-    TtsController(AudioPlayer player) {
+    public TtsController(AudioPlayer player) {
         super(player);
     }
 
