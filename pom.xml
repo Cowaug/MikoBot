@@ -18,7 +18,6 @@
                 </configuration>
             </plugin>
 
-
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
@@ -29,6 +28,22 @@
                             <mainClass>com.ebot.mikobot.MainClass</mainClass>
                         </manifestEntries>
                     </archive>
+                </configuration>
+            </plugin>
+
+
+            <plugin>
+                <groupId>com.heroku.sdk</groupId>
+                <artifactId>heroku-maven-plugin</artifactId>
+                <version>3.0.3</version>
+                <configuration>
+                    <appName>miko-ebot</appName>
+                    <processTypes>
+                        <web>java $JAVA_OPTS -cp target/classes:target/dependency/* com.ebot.mikobot.MainClass</web>
+                    </processTypes>
+                    <configVars>
+                        <TZ>Asia/Ho_Chi_Minh</TZ>
+                    </configVars>
                 </configuration>
             </plugin>
         </plugins>
